@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-    entry: './frontend/src/index.js',    // path to our input file
+    entry: './front-end/index.js',    // path to our input file
     output: {
         filename: 'index-bundle.js',    // output bundle file name
         path: path.resolve(__dirname, './static'),    // path to our Django static directory
@@ -15,6 +15,9 @@ module.exports = {
                 options: { presets: ["@babel/preset-env", "@babel/preset-react"] }
             },
         ]
+    },
+    resolve: {
+      extensions: ['.js', '.jsx'], 
     },
 };
 
