@@ -24,6 +24,9 @@ INSTALLED_APPS = [
     # Project apps
     'profiles.apps.ProfilesConfig',
     'accounts.apps.AccountsConfig',
+    'jobs.apps.JobsConfig',
+    'locations.apps.LocationsConfig',
+    'users.apps.UsersConfig',
     # Django apps
     'django.contrib.admin',
     'django.contrib.auth',
