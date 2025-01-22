@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     # Project apps
     'profiles.apps.ProfilesConfig',
     'accounts.apps.AccountsConfig',
+    'documents.apps.DocumentsConfig',
     'jobs.apps.JobsConfig',
     'locations.apps.LocationsConfig',
     'users.apps.UsersConfig',
