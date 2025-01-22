@@ -1,8 +1,14 @@
 import os,sys
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment-based .env file if it exists
+env_path = os.path.join(BASE_DIR, ".env")
+if os.path.exists(env_path):
+    load_dotenv(env_path, override=True)
 
 # Add apps dir to path
 sys.path.insert(0, os.path.join(BASE_DIR, "apps"))
@@ -23,7 +29,6 @@ ALLOWED_HOSTS = [
 INSTALLED_APPS = [
     # Project apps
     'profiles.apps.ProfilesConfig',
-    'accounts.apps.AccountsConfig',
     'documents.apps.DocumentsConfig',
     'jobs.apps.JobsConfig',
     'locations.apps.LocationsConfig',
@@ -147,3 +152,5 @@ SPECTACULAR_SETTINGS = {
     'SWAGGER_UI_FAVICON_HREF': 'SIDECAR',
     'REDOC_DIST': 'SIDECAR',
 }
+
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
