@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from openai import OpenAI
 import os
+import django
 
 load_dotenv()
 def file_to_string(file_path):
@@ -15,13 +16,19 @@ def file_to_string(file_path):
         print(f"An error occurred while reading the file at {file_path}.")
         return None
 
-
-def conduct_ai_interview():
-    
+# function for conducting ai interview in terminal
+# takes on job and resume model objects
+def conduct_ai_interview(job, resume):
     # fetch prompt from text file
     file_path = "ai-interviewer\\prompt.txt"
     file_string = file_to_string(file_path)
     
+    # append job and resume
+    # TODO: remake this with prompt engineering for better resume and job prompt
+    file_string += "\nJob description: " + job.description
+    file_string += "\nCandidate Name: " + resume.data['first_name'] + " " + resume.data['last_name']
+    file_string += "\nCandidate Resume: " + resume.clean_text
+
     # conversation history for llm
     conversation_history = []
     conversation_history.append({"role": "system", "content": file_string})
@@ -60,5 +67,25 @@ def conduct_ai_interview():
         except Exception as e:
             print("Error communicating with OpenAI API:", str(e))
 
+
+# ran as a script
 if __name__ == "__main__":
-    conduct_ai_interview()
+    # setup django and models (only when ran as a script)
+    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+    django.setup()
+
+    from jobs.models import Job
+    from documents.models import Resume
+
+    # function for conducting a interview with a random job and resume
+    # function only if ran from command line
+    def conduct_random_interview():
+        # fetch random job and resume from database
+        rand_job = Job.objects.order_by('?').first()
+        rand_resume = Resume.objects.order_by('?').first()
+
+        print("Conducting a random interview for the position " + rand_job.title + ". The candidate's name is " + rand_resume.data["first_name"] + ".")
+
+        conduct_ai_interview(rand_job, rand_resume)
+
+    conduct_random_interview()
