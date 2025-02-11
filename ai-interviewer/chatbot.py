@@ -5,6 +5,13 @@ import django
 import time
 
 load_dotenv()
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+django.setup()
+
+from jobs.models import Job
+from documents.models import Resume
+
 def file_to_string(file_path):
     try:
         with open(file_path, 'r') as file:
@@ -21,7 +28,7 @@ def file_to_string(file_path):
 # takes on job and resume model objects
 def conduct_ai_interview(job, resume):
     # fetch prompt from text file
-    file_path = "ai-interviewer\\prompt.txt"
+    file_path = "ai-interviewer/prompt.txt"
     file_string = "You are a professional AI interviewer, designed to conduct a screening interview. "
     file_string += "Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant."
     file_string += "\nmake sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below."
@@ -35,6 +42,7 @@ def conduct_ai_interview(job, resume):
     file_string += f"\n{resume.clean_text}"
     file_string += "here are the instructions and key interview topics to be covered: "
     file_string += file_to_string(file_path) # append prompt.txt after resume, job
+    file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
 
     # conversation history for llm
     conversation_history = []
@@ -89,13 +97,6 @@ def conduct_ai_interview(job, resume):
 
 # ran as a script
 if __name__ == "__main__":
-    # setup django and models (only when ran as a script)
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
-    django.setup()
-
-    from jobs.models import Job
-    from documents.models import Resume
-
     # function for conducting a interview with a random job and resume
     # function only if ran from command line
     def conduct_random_interview():
