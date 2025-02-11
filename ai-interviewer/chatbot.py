@@ -2,6 +2,7 @@ from dotenv import load_dotenv
 from openai import OpenAI
 import os
 import django
+import time
 
 load_dotenv()
 def file_to_string(file_path):
@@ -21,13 +22,19 @@ def file_to_string(file_path):
 def conduct_ai_interview(job, resume):
     # fetch prompt from text file
     file_path = "ai-interviewer\\prompt.txt"
-    file_string = file_to_string(file_path)
-    
+    file_string = "You are a professional AI interviewer, designed to conduct a screening interview. "
+    file_string += "Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant."
+    file_string += "\nmake sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below."
     # append job and resume
-    # TODO: remake this with prompt engineering for better resume and job prompt
-    file_string += "\nJob description: " + job.description
-    file_string += "\nCandidate Name: " + resume.data['first_name'] + " " + resume.data['last_name']
-    file_string += "\nCandidate Resume: " + resume.clean_text
+    file_string += "\n\n--- Job Information ---"
+    file_string += f"\n**Job Title:** {job.title}"
+    file_string += f"\n**Job Description:** {job.description}"
+    file_string += "\n\n--- Candidate Information ---"
+    file_string += f"\n**Candidate Name:** {resume.data['first_name']} {resume.data['last_name']}"
+    file_string += "\n**Candidate Resume Summary:**"
+    file_string += f"\n{resume.clean_text}"
+    file_string += "here are the instructions and key interview topics to be covered: "
+    file_string += file_to_string(file_path) # append prompt.txt after resume, job
 
     # conversation history for llm
     conversation_history = []
@@ -47,7 +54,19 @@ def conduct_ai_interview(job, resume):
     conversation_history.append({"role": "assistant", "content": bot_reply})
     print("Interviewer: ", bot_reply)
 
+    start_time = time.time()
+    max_time = 15 * 60  #max time in seconds
+    warning_flag = False
+
     while True:
+        if  warning_flag == False and time.time() - start_time >= max_time - 60:
+            print("Warning: The interview will end in 1 minute.")
+            warning_flag = True
+
+        if time.time() - start_time >= max_time:
+            print("Time is up! Ending the interview now.")
+            break
+        
         user_input = input("You: ")
         if user_input.lower() == "exit": # remove later
             print("Goodbye!")
