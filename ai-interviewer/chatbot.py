@@ -28,20 +28,23 @@ def file_to_string(file_path):
 # takes on job and resume model objects
 def conduct_ai_interview(job, resume):
     # fetch prompt from text file
+
     file_path = "ai-interviewer/prompt.txt"
-    file_string = "You are a professional AI interviewer, designed to conduct a screening interview. "
-    file_string += "Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant."
-    file_string += "\nmake sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below."
-    # append job and resume
-    file_string += "\n\n--- Job Information ---"
-    file_string += f"\n**Job Title:** {job.title}"
-    file_string += f"\n**Job Description:** {job.description}"
-    file_string += "\n\n--- Candidate Information ---"
-    file_string += f"\n**Candidate Name:** {resume.data['first_name']} {resume.data['last_name']}"
-    file_string += "\n**Candidate Resume Summary:**"
-    file_string += f"\n{resume.clean_text}"
-    file_string += "here are the instructions and key interview topics to be covered: "
-    file_string += file_to_string(file_path) # append prompt.txt after resume, job
+
+    file_string =  f"""You are a professional AI interviewer, designed to conduct a screening interview.
+    Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant.
+    Make sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below.
+    --- Job Information ---
+    **Job Title:** {job.title}
+    **Job Description:** {job.description}
+
+    --- Candidate Information ---
+    **Candidate Name:** {resume.data['first_name']} {resume.data['last_name']}
+    **Candidate Resume Summary:**
+    {resume.clean_text}
+    Here are the instructions and key interview topics to be covered: 
+    {file_to_string(file_path)}
+    """
     file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
 
     # conversation history for llm
