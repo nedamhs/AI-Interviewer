@@ -16,29 +16,33 @@ def file_to_string(file_path):
         return None
 
 
-def chat_with_gpt():
+def conduct_ai_interview():
+    
+    # fetch prompt from text file
+    file_path = "ai-interviewer\\prompt.txt"
+    file_string = file_to_string(file_path)
+    
+    # conversation history for llm
+    conversation_history = []
+    conversation_history.append({"role": "system", "content": file_string})
+
+    # openai setup
     client = OpenAI(
         api_key=os.environ.get("OPENAI-API-KEY"),
     )
 
-    file_path = "ai-interviewer\\prompt.txt"
-    file_string = file_to_string(file_path)
-    print("AI Interviewer")
-    conversation_history = []
-    conversation_history.append({"role": "system", "content": file_string})
-
+    # first message
     response = client.chat.completions.create(
         messages=conversation_history,
-        model="gpt-4o",
+        model="gpt-4o-mini",
     )
-
     bot_reply = response.choices[0].message.content
     conversation_history.append({"role": "assistant", "content": bot_reply})
+    print("Interviewer: ", bot_reply)
 
-    print("AI:", bot_reply)
     while True:
         user_input = input("You: ")
-        if user_input.lower() == "exit":
+        if user_input.lower() == "exit": # remove later
             print("Goodbye!")
             break
 
@@ -47,14 +51,14 @@ def chat_with_gpt():
         try:
             response = client.chat.completions.create(
                 messages=conversation_history,
-                model="gpt-4o",
+                model="gpt-4o-mini",
             )
             bot_reply = response.choices[0].message.content
-            print("AI:", bot_reply)
+            print("Interviewer:", bot_reply)
 
             conversation_history.append({"role": "assistant", "content": bot_reply})
         except Exception as e:
             print("Error communicating with OpenAI API:", str(e))
 
 if __name__ == "__main__":
-    chat_with_gpt()
+    conduct_ai_interview()
