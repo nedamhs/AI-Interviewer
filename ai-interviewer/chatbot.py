@@ -1,8 +1,10 @@
 from dotenv import load_dotenv
 from openai import OpenAI
+from select import select
 import os
 import django
 import time
+import sys
 
 load_dotenv()
 
@@ -24,9 +26,48 @@ def file_to_string(file_path):
         print(f"An error occurred while reading the file at {file_path}.")
         return None
 
+def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ):
+    '''
+    Timed input system for the user, will timeout if the user takes greater than the timeout time to respond. This function will 
+    send a timeout warning when [warning_time] seconds remain.
+    
+    TODO:
+        Change for getting the input from the webapp rather than the terminal app  
+        Penalize users for taking too long to respond
+        Change how the exit case works if the user takes too long to respond 
+
+    Inputs:
+        timeout : Int 
+            Timeout time in seconds, currently set to 5 minutes... note to adjusting time, 
+            ensure the timeout time is longer than the warning time
+        warning_time : Int 
+            Warning time in seconds, this will alert the user how long is left for the question before timeout, 
+            currently set to 1 minute
+            
+    Returns: 
+        String
+            Either will be the user input or the exit case
+    '''
+    warning_message = f"Interviewer: Hello are you there? This interview will timeout if no response is given in {warning_time} seconds."
+    input_time = time.time()
+
+    print("You:", end= " ")
+    while (time.time()-input_time) < timeout:
+        ready_for_input, _, _ = select([sys.stdin], [], [], 1)
+        if warning_time >= timeout - (time.time() - input_time):
+            print(f"\n{warning_message} \nYou:", end = " ")
+            warning_time = -1 
+        if ready_for_input: 
+            return sys.stdin.readline().strip()
+
+    
+    print("\nUser did not respond in time, thank you for your time.", end= ' ')
+    return "exit"
+        
+
 # function for conducting ai interview in terminal
 # takes on job and resume model objects
-def conduct_ai_interview(job, resume):
+def conduct_ai_interview(job, resume):  
     # fetch prompt from text file
 
     file_path = "ai-interviewer/prompt.txt"
@@ -66,7 +107,7 @@ def conduct_ai_interview(job, resume):
     print("Interviewer: ", bot_reply)
 
     start_time = time.time()
-    max_time = 15 * 60  #max time in seconds
+    max_time = 15 * 60  # max time in seconds 
     warning_flag = False
 
     while True:
@@ -78,7 +119,7 @@ def conduct_ai_interview(job, resume):
             print("Time is up! Ending the interview now.")
             break
         
-        user_input = input("You: ")
+        user_input = get_user_input()
         if user_input.lower() == "exit": # remove later
             print("Goodbye!")
             break
