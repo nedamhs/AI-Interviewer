@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'jobs.apps.JobsConfig',
     'locations.apps.LocationsConfig',
     'users.apps.UsersConfig',
+    'transcripts.apps.TranscriptsConfig',
     # Django apps
     'django.contrib.admin',
     'django.contrib.auth',
