@@ -5,6 +5,7 @@ import os
 import django
 import time
 import sys
+import json
 
 load_dotenv()
 
@@ -51,7 +52,7 @@ def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ):
     warning_message = f"Interviewer: Hello are you there? This interview will timeout if no response is given in {warning_time} seconds."
     input_time = time.time()
 
-    print("You:", end= " ")
+    # print("You:", end= " ")
     while (time.time()-input_time) < timeout:
         ready_for_input, _, _ = select([sys.stdin], [], [], 1)
         if warning_time >= timeout - (time.time() - input_time):
@@ -63,6 +64,17 @@ def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ):
     
     print("\nUser did not respond in time, thank you for your time.", end= ' ')
     return "exit"
+
+def write_to_transcript(role, content, initial_write=False):
+    mode = "w" if initial_write else "a"
+    data = {
+        "role": role,
+        "content": content,
+        "time": time.strftime("%H:%M:%S", time.localtime())
+    }
+    json_obj = json.dumps(data, indent=4)
+    with open("transcript.json", mode) as file:
+        file.write(json_obj)
         
 
 # function for conducting ai interview in terminal
@@ -88,6 +100,8 @@ def conduct_ai_interview(job, resume):
     """
     file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
 
+    # transcript
+    transcript = open("transcript.txt", "w")
     # conversation history for llm
     conversation_history = []
     conversation_history.append({"role": "system", "content": file_string})
@@ -104,6 +118,8 @@ def conduct_ai_interview(job, resume):
     )
     bot_reply = response.choices[0].message.content
     conversation_history.append({"role": "assistant", "content": bot_reply})
+    transcript.write(f"[\"role\": \"assistant\", \"content\": {bot_reply}]\n")
+    write_to_transcript("assistant", (bot_reply), initial_write=True)
     print("Interviewer: ", bot_reply)
 
     start_time = time.time()
@@ -119,12 +135,16 @@ def conduct_ai_interview(job, resume):
             print("Time is up! Ending the interview now.")
             break
         
+        print("You: ", end='', flush=True)
         user_input = get_user_input()
         if user_input.lower() == "exit": # remove later
+            transcript.close()
             print("Goodbye!")
             break
 
         conversation_history.append({"role": "user", "content": user_input})
+        transcript.write(f"[\"role\": \"user\", \"content\": {user_input}]\n")
+        write_to_transcript("user", (user_input))
 
         try:
             response = client.chat.completions.create(
@@ -135,6 +155,8 @@ def conduct_ai_interview(job, resume):
             print("Interviewer:", bot_reply)
 
             conversation_history.append({"role": "assistant", "content": bot_reply})
+            transcript.write(f"[\"role\": \"assistant\", \"content\": {bot_reply}]\n")
+            write_to_transcript("assistant", (bot_reply))
         except Exception as e:
             print("Error communicating with OpenAI API:", str(e))
 

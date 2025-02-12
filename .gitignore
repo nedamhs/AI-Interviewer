@@ -158,3 +158,5 @@ db.sqlite3
 node_modules
 .DS_Store
 static/index-bundle.js
+transcript.json
+transcript.txt
