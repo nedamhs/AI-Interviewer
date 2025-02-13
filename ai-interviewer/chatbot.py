@@ -1,6 +1,7 @@
 from dotenv import load_dotenv
 from openai import OpenAI
 from select import select
+from prompt import prompt_string
 import os
 import django
 import time
@@ -14,18 +15,6 @@ django.setup()
 
 from jobs.models import Job
 from documents.models import Resume
-
-def file_to_string(file_path):
-    try:
-        with open(file_path, 'r') as file:
-            file_content = file.read()
-        return file_content
-    except FileNotFoundError:
-        print(f"The file at {file_path} was not found.")
-        return None
-    except IOError:
-        print(f"An error occurred while reading the file at {file_path}.")
-        return None
 
 def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ):
     '''
@@ -65,43 +54,36 @@ def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ):
     print("\nUser did not respond in time, thank you for your time.", end= ' ')
     return "exit"
 
-def write_to_transcript(role, content, initial_write=False):
-    mode = "w" if initial_write else "a"
-    data = {
-        "role": role,
-        "content": content,
-        "time": time.strftime("%H:%M:%S", time.localtime())
-    }
-    json_obj = json.dumps(data, indent=4)
-    with open("transcript.json", mode) as file:
+# writes all messages to json transcript
+def write_to_transcript(id, user, messages):
+    # creates dictionary, converts it to json object then writes to json file
+    transcript = { "conversation_id": id, "interviewee": user, "messages": messages}
+    json_obj = json.dumps(transcript, indent=4)
+    with open("transcript.json", "w") as file:
         file.write(json_obj)
-        
 
 # function for conducting ai interview in terminal
 # takes on job and resume model objects
 def conduct_ai_interview(job, resume):  
-    # fetch prompt from text file
-
-    file_path = "ai-interviewer/prompt.txt"
-
     file_string =  f"""You are a professional AI interviewer, designed to conduct a screening interview.
     Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant.
     Make sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below.
     --- Job Information ---
     **Job Title:** {job.title}
     **Job Description:** {job.description}
+    **Job Remote Option:** {job.remote_option}
 
     --- Candidate Information ---
     **Candidate Name:** {resume.data['first_name']} {resume.data['last_name']}
     **Candidate Resume Summary:**
     {resume.clean_text}
     Here are the instructions and key interview topics to be covered: 
-    {file_to_string(file_path)}
+    {prompt_string()}
     """
     file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
 
     # transcript
-    transcript = open("transcript.txt", "w")
+    messages = []
     # conversation history for llm
     conversation_history = []
     conversation_history.append({"role": "system", "content": file_string})
@@ -118,8 +100,7 @@ def conduct_ai_interview(job, resume):
     )
     bot_reply = response.choices[0].message.content
     conversation_history.append({"role": "assistant", "content": bot_reply})
-    transcript.write(f"[\"role\": \"assistant\", \"content\": {bot_reply}]\n")
-    write_to_transcript("assistant", (bot_reply), initial_write=True)
+    messages.append({"role": "assistant","content": bot_reply,"time": time.strftime("%H:%M:%S", time.localtime())})
     print("Interviewer: ", bot_reply)
 
     start_time = time.time()
@@ -138,14 +119,13 @@ def conduct_ai_interview(job, resume):
         print("You: ", end='', flush=True)
         user_input = get_user_input()
         if user_input.lower() == "exit": # remove later
-            transcript.close()
+            write_to_transcript(resume.id, resume.data['first_name'], messages=messages)
             print("Goodbye!")
             break
 
         conversation_history.append({"role": "user", "content": user_input})
-        transcript.write(f"[\"role\": \"user\", \"content\": {user_input}]\n")
-        write_to_transcript("user", (user_input))
-
+        messages.append({"role": "user","content": user_input,"time": time.strftime("%H:%M:%S", time.localtime())})
+        
         try:
             response = client.chat.completions.create(
                 messages=conversation_history,
@@ -155,8 +135,7 @@ def conduct_ai_interview(job, resume):
             print("Interviewer:", bot_reply)
 
             conversation_history.append({"role": "assistant", "content": bot_reply})
-            transcript.write(f"[\"role\": \"assistant\", \"content\": {bot_reply}]\n")
-            write_to_transcript("assistant", (bot_reply))
+            messages.append({"role": "assistant","content": bot_reply,"time": time.strftime("%H:%M:%S", time.localtime())})
         except Exception as e:
             print("Error communicating with OpenAI API:", str(e))
 
