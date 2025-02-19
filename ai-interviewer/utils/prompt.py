@@ -5,20 +5,22 @@ load_dotenv()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 django.setup()
 from jobs.models import Job
-from documents.models import Resume
+from profiles.models import TalentProfile
+from .distances import calculate_distance
 
-def prompt_string() -> str:
+def prompt_string(min_dist : int, remote_option : bool) -> str:
     '''
     Function called in chatbot.py to provide prompt as a string to API call.
-
+ 
     Inputs:
-        None
+        min_dist : int
+        remote_option : bool
      
     Returns: 
         String
             Returns a prompt for openai to follow 
     '''
-    return """Follow these guidelines:
+    return f"""Follow these guidelines:
 
     Introduction:
     Greet the candidate warmly and introduce yourself as the AI interviewer.
@@ -30,7 +32,15 @@ def prompt_string() -> str:
     Location and Work Setup:
 
     Ask Where are they currently located? If there is a specific location you find on their resume, ask if they are still located at said location
-    Ask if they are open to working in a hybrid or fully remote setup based on the bool value of job.remote_option
+    
+    {"the job location is more than 50 miles from the candidate's current location and job is not offered remotely ",
+     "ask if they are open to relocating" if (min_dist > 50 and remote_option == 0) else ""}
+    {"the job location is within 50 miles from the candidate's current location and job is not offered remotely ",
+     "ask if they are willing to commute to the office?" if (min_dist < 50 and remote_option == 0) else ""}
+    {"the job location is more than 50 miles from the candidate's current location and job is offered remotely ",
+    "ask if they are okay with remote work? ask about their timezone." if (min_dist > 50 and remote_option == 1) else ""}
+    {"the job location is within 50 miles from the candidate's current location and job is offered remotely ",
+    "ask if if they want to work remote or commute to the office?" if (min_dist < 50 and remote_option == 1) else ""}
 
     Ask When they are available to start the job, and for how long?
     Ask if they are available to work full-time for the job?
@@ -72,34 +82,48 @@ def prompt_string() -> str:
     Ask similar questions one by one. Don't explain answers just keep it brief."""
 
 
-def start_interview_prompt(job: Job, resume: Resume) -> str:
+def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     ''' 
     Initial Prompt for the AI which includes the large prompt string
 
     Inputs: 
         job : Job
             Job model which includes information about the specific job
-        resume : Resume
-            Resume model which includes information about the user and their resume 
+        talent: TalentProfile
+             TalentProfile model which includes information about the talent and their resume  
 
     Returns: 
         String
             Returns the inital prompting string which the AI will input
     '''
+    job_locations = job.locations.all()  # get all job locations
+    talent_locations = talent.locations.all() # get all talent location
+    job_location_names = ", ".join([loc.display_name for loc in job_locations])
+    talent_location_names = ", ".join([loc.display_name for loc in talent_locations])
+
+    distances = calculate_distance(job_locations, talent_locations)
+    print("distances : ", distances) #testing! remove later
+    min_dist = min(distances, key=lambda x: x[2])[2] #sort by dist, get min
+
     file_string =  f"""You are a professional AI interviewer, designed to conduct a screening interview.
     Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant.
     Make sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below.
     --- Job Information ---
     **Job Title:** {job.title}
-    **Job Description:** {job.description}
     **Job Remote Option:** {job.remote_option}
+    **Job Location(s):** {job_location_names}
+    **Job Description:** {job.description}
+    
 
     --- Candidate Information ---
-    **Candidate Name:** {resume.data['first_name']} {resume.data['last_name']}
-    **Candidate Resume Summary:**
-    {resume.clean_text}
-    Here are the instructions and key interview topics to be covered: 
-    {prompt_string()}
+    **Candidate Name:** {talent.user.first_name} {talent.user.last_name}
+    **Candidate location:** {talent_location_names}
+    **Candidate Resume Summary:**{talent.resume.clean_text}
+    Here are the instructions and key interview topics to be covered: {prompt_string(min_dist, job.remote_option)}
     """
+
     file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
+
+    #print(file_string) #TESTING
+    
     return file_string
