@@ -1,9 +1,22 @@
+import django
+import os
+from dotenv import load_dotenv
+load_dotenv()
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
+django.setup()
+from jobs.models import Job
+from documents.models import Resume
+
 def prompt_string() -> str:
     '''
     Function called in chatbot.py to provide prompt as a string to API call.
 
-    No args required.
-    Returns a string.
+    Inputs:
+        None
+     
+    Returns: 
+        String
+            Returns a prompt for openai to follow 
     '''
     return """Follow these guidelines:
 
@@ -57,3 +70,36 @@ def prompt_string() -> str:
     Thank them for their time and inform them about the next steps in the process (e.g., scheduling follow-up interviews or informing them about the selection process).
 
     Ask similar questions one by one. Don't explain answers just keep it brief."""
+
+
+def start_interview_prompt(job: Job, resume: Resume) -> str:
+    ''' 
+    Initial Prompt for the AI which includes the large prompt string
+
+    Inputs: 
+        job : Job
+            Job model which includes information about the specific job
+        resume : Resume
+            Resume model which includes information about the user and their resume 
+
+    Returns: 
+        String
+            Returns the inital prompting string which the AI will input
+    '''
+    file_string =  f"""You are a professional AI interviewer, designed to conduct a screening interview.
+    Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant.
+    Make sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below.
+    --- Job Information ---
+    **Job Title:** {job.title}
+    **Job Description:** {job.description}
+    **Job Remote Option:** {job.remote_option}
+
+    --- Candidate Information ---
+    **Candidate Name:** {resume.data['first_name']} {resume.data['last_name']}
+    **Candidate Resume Summary:**
+    {resume.clean_text}
+    Here are the instructions and key interview topics to be covered: 
+    {prompt_string()}
+    """
+    file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
+    return file_string
