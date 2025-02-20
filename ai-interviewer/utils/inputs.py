@@ -1,6 +1,8 @@
 import time
 import sys
 from select import select
+import msvcrt
+import platform
 
 def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ) -> str:
     '''
@@ -29,12 +31,17 @@ def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ) -> str:
 
     # print("You:", end= " ")
     while (time.time()-input_time) < timeout:
-        ready_for_input, _, _ = select([sys.stdin], [], [], 1)
+        if platform.system() == "Windows":
+            if msvcrt.kbhit():
+                return sys.stdin.readline().strip()
+        else:
+            ready_for_input, _, _ = select([sys.stdin], [], [], 1)
+            if ready_for_input:
+                return sys.stdin.readline().strip()
+        
         if warning_time >= timeout - (time.time() - input_time):
             print(f"\n{warning_message} \nYou:", end = " ")
             warning_time = -1 
-        if ready_for_input: 
-            return sys.stdin.readline().strip()
 
     
     print("\nUser did not respond in time, thank you for your time.", end= ' ')
