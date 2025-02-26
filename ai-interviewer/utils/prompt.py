@@ -68,19 +68,32 @@ def randomize_prompts() -> list[str]:
     Returns:
         list: A shuffled list of prompts.
     """
-    prompt_list = [
+    # prompt_list = [
+    # availability_prompt(),
+    # schedule_prompt(), 
+    # academic_background_prompt(),
+    # interest_prompt(), 
+    # prev_experience_prompt(), 
+    # teamwork_prompt(), 
+    # communication_prompt(), 
+    # preference_prompt()]
+
+    must_ask_list = [
     availability_prompt(),
     schedule_prompt(), 
     academic_background_prompt(),
     interest_prompt(), 
-    prev_experience_prompt(), 
+    ]
+
+    optional = [prev_experience_prompt(), 
     teamwork_prompt(), 
     communication_prompt(), 
     preference_prompt()]
 
-    random.shuffle(prompt_list)
-
-    return prompt_list
+    random.shuffle(must_ask_list)
+    random.shuffle(optional)
+    must_ask_list.extend(optional)
+    return must_ask_list
 
 def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     ''' 
@@ -110,10 +123,15 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     Greet the candidate warmly and introduce yourself as the AI interviewer.
     Briefly explain the structure of the interview: this will focus on your background, availability, and fit for the job.
     Mention that no deep technical questions will be asked at this stage. It's primarily a logistical and cultural fit conversation.
-    Only ask one question at a time.
+    Absolutely never ask more than one question at a time. After asking a question, wait for the candidate's response before proceeding.
     Take the information from their resume to tailor/personalize the questions for the candidate.
     Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant.
     Make sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below.
+    Change the wording in the following questions to sound natural and adjust tone and language to give a more conversational experience.
+    If the candidate does not fully answer the question, do not proceed. Politely rephrase and ask again until they provide a complete response. Do not move forward until the current question is fully answered.
+    Do not proceed to the next question until you have confirmed that the previous question has been fully answered. If the candidate’s response is incomplete, ask a follow-up question until they fully address the topic.
+
+
 
     --- Job Information ---
     **Job Title:** {job.title}
@@ -129,7 +147,6 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
 
     file_string += location_prompt(min_dist, job.remote_option )  
     file_string += f"\n\n".join(randomize_prompts())     # other prompts in random order
-
     file_string += """Closing the Interview:
     Summarize key points discussed in the interview, particularly around availability and interest in the role.
     Thank them for their time and inform them about the next steps in the process (e.g., scheduling follow-up 
