@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'transcripts.apps.TranscriptsConfig',
     'core.apps.CoreConfig',
+    'interviews.apps.InterviewsConfig',
     # Django apps
     'django.contrib.admin',
     'django.contrib.auth',
