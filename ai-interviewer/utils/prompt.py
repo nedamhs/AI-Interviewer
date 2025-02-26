@@ -78,7 +78,8 @@ def prompt_string(min_dist : int, remote_option : bool) -> str:
     Closing the Interview:
     Summarize key points discussed in the interview, particularly around availability and interest in the role.
     Thank them for their time and inform them about the next steps in the process (e.g., scheduling follow-up interviews or informing them about the selection process).
-
+    Call the end_interview function.
+    
     Ask similar questions one by one. Don't explain answers just keep it brief."""
 
 

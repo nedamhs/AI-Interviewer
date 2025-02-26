@@ -17,7 +17,7 @@ def get_client() -> OpenAI:
     )
     return client 
 
-def get_bot_response(client: OpenAI, conversation_history: list, model_type: str = "gpt-4o-mini") -> str:
+def get_bot_response(client: OpenAI, conversation_history: list, model_type: str = "gpt-4o-mini", tools: list = []) -> dict:
     '''
     Gives the bot conversation history and then sends back a reply to the user. 
 
@@ -36,5 +36,6 @@ def get_bot_response(client: OpenAI, conversation_history: list, model_type: str
     response = client.chat.completions.create(
                 messages=conversation_history,
                 model=model_type,
+                tools=tools
             )
-    return response.choices[0].message.content
+    return response.choices[0].message

@@ -1,4 +1,6 @@
+from .openai_functions import end_interview
 import time
+import json
 from .transcript import write_to_transcript
 from .bot import get_bot_response
 from .inputs import get_user_input,update_history
@@ -68,9 +70,28 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             update_history("user", conversation_history, transcript_messages, user_input)
             
             try:
-                bot_reply = get_bot_response(client, conversation_history=conversation_history)
+                bot_response = get_bot_response(client, conversation_history=conversation_history, tools=[end_interview()])
+                bot_reply = bot_response.content
+                bot_tools = bot_response.tool_calls
+                
                 print("Interviewer:", bot_reply)
 
                 update_history("assistant", conversation_history, transcript_messages, bot_reply)
+
+                # Check for function call by model
+                # End interview and print summary if found
+                if bot_tools:
+                    end = False
+                    for tool_call in bot_tools:
+                        name = tool_call.function.name
+                        args = json.loads(tool_call.function.arguments)
+
+                        if name == "end_interview":
+                            # In a non-terminal version, this would be saved to a database, not shown to interviewee
+                            print("\nInterviewer [For admin]:", args["summary"]) 
+                            end = True
+                    if end:
+                        break
+
             except Exception as e:
                 print("Error communicating with OpenAI API:", str(e))

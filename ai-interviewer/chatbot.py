@@ -3,6 +3,7 @@ from utils.prompt import start_interview_prompt
 from utils.inputs import update_history
 from utils.bot import get_client, get_bot_response
 from utils.interview import conduct_interview
+from utils.openai_functions import end_interview
 import os
 import django
 import time
@@ -38,7 +39,9 @@ def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:
     client = get_client()
     
     # first message
-    bot_reply = get_bot_response(client, conversation_history=conversation_history)
+    bot_response = get_bot_response(client, conversation_history=conversation_history, tools=[end_interview()])
+    bot_reply = bot_response.content
+    
     update_history("assistant", conversation_history, transcript_messages,bot_reply)
     print("Interviewer: ", bot_reply)
 
