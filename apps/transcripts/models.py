@@ -1,16 +1,14 @@
 from django.db import models
-from jobs.models import Job
-from profiles.models import TalentProfile
+from interviews.models import Interview
+from core.models import Timestampable
 import uuid 
 
-class Transcript(models.Model):
+class Transcript(Timestampable):
     """Stores interview transcripts for a specific session"""
 
     session_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)  # Unique session ID
-    job = models.ForeignKey(Job, on_delete=models.CASCADE, related_name="transcripts")
-    candidate_profile = models.ForeignKey(TalentProfile, on_delete=models.CASCADE, related_name="transcripts")
-    content = models.TextField()  # storing full interview transcript
-    created_at = models.DateTimeField(auto_now_add=True)
-
+    interview = models.ForeignKey(Interview, on_delete=models.CASCADE, related_name="transcripts")
+    question = models.TextField() # stores question asked by chatbot
+    answer = models.TextField() # stores answer from candidate
     def __str__(self):
-        return f"Transcript ({self.session_id}) for {self.candidate_profile.user.first_name} - {self.job.title}"
+        return f"Transcript ({self.session_id}) for {self.interview.candidate.user.first_name} - {self.interview.job.title}"
