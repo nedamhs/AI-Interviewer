@@ -27,7 +27,12 @@ def calculate_distance(job_locations: list, talent_locations: list) -> list[tupl
             dist = haversine(job_latitude, job_longitude, talent_latitude, talent_longitude)
             distances.append((talent_address, job_address, dist))
 
+    # if talent location/job location unknown
+    if not distances:
+        return [("No Talent Location", "No Job Location", float('inf'))]
+
     return distances
+
 
 # https://www.geeksforgeeks.org/haversine-formula-to-find-distance-between-two-points-on-a-sphere/
 def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
