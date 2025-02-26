@@ -1,7 +1,7 @@
 import time
 import sys
 from select import select
-import msvcrt
+#import msvcrt #doesnt work on mac
 import platform
 
 def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ) -> str:
