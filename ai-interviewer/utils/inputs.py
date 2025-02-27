@@ -1,7 +1,6 @@
 import time
 import sys
 from select import select
-#import msvcrt #doesnt work on mac
 import platform
 
 def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ) -> str:
@@ -32,6 +31,7 @@ def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ) -> str:
     # print("You:", end= " ")
     while (time.time()-input_time) < timeout:
         if platform.system() == "Windows":
+            import msvcrt
             if msvcrt.kbhit():
                 return sys.stdin.readline().strip()
         else:

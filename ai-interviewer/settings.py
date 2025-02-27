@@ -34,10 +34,12 @@ INSTALLED_APPS = [
     'locations.apps.LocationsConfig',
     'users.apps.UsersConfig',
     'transcripts.apps.TranscriptsConfig',
+    'core.apps.CoreConfig',
+    'interviews.apps.InterviewsConfig',
     # Django apps
     'django.contrib.admin',
     'django.contrib.auth',
-    'django.contrib.contenttypes',
+    'django.contrib.contenttypes', 
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
