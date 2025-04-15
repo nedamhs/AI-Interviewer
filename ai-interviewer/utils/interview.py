@@ -4,6 +4,7 @@ import json
 from .transcript import write_to_transcript
 from .bot import get_bot_response
 from .inputs import get_user_input,update_history
+from audio_utils.audio_transcriber import Transcriber
 from openai import OpenAI
 import django
 import os
@@ -16,7 +17,7 @@ from jobs.models import Job
 from locations.models import Location
 from .distances import calculate_distance
 
-def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
+def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI, transcriber:Transcriber) -> None:
         '''
         Main structured function for conducting the screening interview
 
@@ -31,6 +32,8 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 The conversation history the bot will be using
             client : OpenAI
                 The way to API call the bot
+            trasncriber : Transcriber
+                Transcriber class to get text from speech and pass into user input
         
         Returns:
             None
@@ -59,7 +62,10 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 break
             
             print("You: ", end='', flush=True)
-            user_input = get_user_input()
+            # user_input = get_user_input()
+            # popped from audio queue of audio transcriber
+            user_input = transcriber.transcript_queue.get()
+            print(f"{user_input}\n")
             if user_input.lower() == "exit": # remove later
                 write_to_transcript(talent.user.id, talent.user.first_name, messages=transcript_messages)
                 print("Goodbye!")

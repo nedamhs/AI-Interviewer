@@ -4,6 +4,7 @@ from utils.inputs import update_history
 from utils.bot import get_client, get_bot_response
 from utils.interview import conduct_interview
 from utils.openai_functions import end_interview
+from audio_utils.audio_transcriber import Transcriber
 import os
 import django
 import time
@@ -45,7 +46,14 @@ def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:
     update_history("assistant", conversation_history, transcript_messages,bot_reply)
     print("Interviewer: ", bot_reply)
 
-    conduct_interview(talent, job, transcript_messages, conversation_history, client)  
+    # start interview starting transcriber and interview model
+    transcriber = Transcriber()
+    try:
+        transcriber.transcribe_start()
+        conduct_interview(talent, job, transcript_messages, conversation_history, client, transcriber)
+    except KeyboardInterrupt:
+        transcriber.transcribe_stop()
+        print("\nStopped transcriber and interview.")
 
 
 # ran as a script
