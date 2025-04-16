@@ -5,6 +5,7 @@ import pyvirtualcam
 from PIL import Image
 import numpy as np
 import threading
+import time
 
 DEFAULT_WIDTH=1280
 DEFAULT_HEIGHT=720
@@ -34,14 +35,14 @@ class VirtualCamera:
     def video_start(self) -> None:
         """ Starts transriber, starting the thread and video stream. """
         self.running = True
-        self.thread = threading.Thread(target=self.start_virtual_cam())
+        self.thread = threading.Thread(target=self.start_virtual_cam)
         self.thread.start()
         print("Streaming video... Ctrl+C to stop.")
-        self.thread.join()
 
     def video_stop(self) -> None:
         """ Stops video stream. """
         self.running = False
+        self.thread.join()
 
 if __name__ == "__main__":
     # Test script
