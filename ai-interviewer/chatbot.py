@@ -7,6 +7,7 @@ from utils.openai_functions import end_interview
 import os
 import django
 import time
+import json
 
 load_dotenv()
 
@@ -40,12 +41,20 @@ def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:
     
     # first message
     bot_response = get_bot_response(client, conversation_history=conversation_history, tools=[end_interview()])
-    bot_reply = bot_response.content
-    
-    update_history("assistant", conversation_history, transcript_messages,bot_reply)
-    print("Interviewer: ", bot_reply)
+    #bot_reply = bot_response.content  #for non structured output  
 
-    conduct_interview(talent, job, transcript_messages, conversation_history, client)  
+    #print("Testing: ", bot_response)
+    #print("TESTING:, RAW CONTENT: \n", bot_response.content)
+
+    parsed = json.loads(bot_response.content)
+    category = parsed["category"]
+    bot_reply = parsed["question"]
+
+    update_history("assistant", conversation_history, transcript_messages,bot_reply, category)
+    print("Interviewer: ", bot_reply)
+    conduct_interview(talent, job, transcript_messages, conversation_history, client)
+
+
 
 
 # ran as a script

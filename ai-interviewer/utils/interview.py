@@ -17,6 +17,7 @@ from locations.models import Location
 from .distances import calculate_distance, process_location_update
 from django.utils import timezone
 from interviews.models import Interview, InterviewStatusChoices
+from .scoring import score_interview 
 
 
 def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
@@ -70,7 +71,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 timed_ending_msg = "Time is up! Ending the interview now."
                 print(timed_ending_msg) #remove later
                 update_history("assistant", conversation_history, transcript_messages, timed_ending_msg)
-                finalize_interview(interview, transcript_messages, talent)
+                finalize_interview(interview, transcript_messages, talent, client)
                 break
             
             print("You: ", end='', flush=True)
@@ -81,7 +82,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 goodbye_msg = "Goodbye! have a great day."
                 print(goodbye_msg) # remove later
                 update_history("assistant", conversation_history, transcript_messages, goodbye_msg)
-                finalize_interview(interview, transcript_messages, talent)
+                finalize_interview(interview, transcript_messages, talent, client)
                 break
 
             if bot_reply and ("currently located" in bot_reply.lower().strip() or "current location" in bot_reply.lower().strip()):
@@ -112,7 +113,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                     print("Interviewer:", final_msg) # remove later
                     bot_reply = final_msg
                     update_history("assistant", conversation_history, transcript_messages, final_msg)
-                    finalize_interview(interview, transcript_messages, talent)
+                    finalize_interview(interview, transcript_messages, talent, client)
                     return
                     
 
@@ -123,18 +124,36 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                     bot_reply = confirmation_msg
                     relocation_flag = False 
                     relocation_reconsideration_flag = True #flag for HR
-    
-
-            # update_history("user", conversation_history, transcript_messages, user_input)
-            
+         
             try:
-                bot_response = get_bot_response(client, conversation_history=conversation_history, tools=[end_interview()])
-                bot_reply = bot_response.content
-                bot_tools = bot_response.tool_calls
-                
-                print("\nInterviewer:", bot_reply)
 
-                update_history("assistant", conversation_history, transcript_messages, bot_reply)
+                bot_response = get_bot_response(client, conversation_history=conversation_history, tools=[end_interview()])
+                #print(bot_response.content)
+
+                if bot_response.content:
+                    content = bot_response.content.strip()
+
+                    # if response contain more than 1 obj
+                    if content.count("{") > 1 and content.count("}") > 1:
+                        first_json_obj = content.split("\n")[0].strip() # get first one only
+                        parsed = json.loads(first_json_obj)
+         
+                    else: 
+                        parsed = json.loads(content)
+
+                    bot_reply = parsed["question"]
+                    category = parsed["category"]
+                    print("\nInterviewer:", bot_reply)
+                    update_history("assistant", conversation_history, transcript_messages, bot_reply, category)
+                else:
+                   print("tool called, ending the interview.")
+                   #print(bot_response)
+
+
+                #bot_reply = bot_response.content 
+                bot_tools = bot_response.tool_calls
+                # print("\nInterviewer:", bot_reply)
+                # update_history("assistant", conversation_history, transcript_messages, bot_reply)
 
                 # Check for function call by model
                 # End interview and print summary if found
@@ -147,16 +166,18 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                         if name == "end_interview":
                             # In a non-terminal version, this would be saved to a database, not shown to interviewee
                             print("\nInterviewer [For admin]:", args["summary"]) 
+                            interview_summary =  args["summary"] # store this somewhere in db later
                             end = True
                     if end:
-                        finalize_interview(interview, transcript_messages, talent)
+                        finalize_interview(interview, transcript_messages, talent, client)
                         break
 
             except Exception as e:
                 print("Error communicating with OpenAI API:", str(e))
+                print("Raw bot response:", repr(bot_response.content))
 
 
-def finalize_interview(interview, transcript_messages, talent):
+def finalize_interview(interview: Interview , transcript_messages:list, talent: TalentProfile, client:OpenAI) -> None :
     """
     Finalizes the interview by marking it as "awaiting feedback", saving the end time,
     and writing the conversation transcript to the database and a jason file.
@@ -164,7 +185,9 @@ def finalize_interview(interview, transcript_messages, talent):
     Inputs:
         interview: Interview object to be updated.
         transcript_messages (list): List of messages during the interview.
-        talent: TalentProfile object representing the candidate.
+        talent: TalentProfile representing the candidate.
+        client: OpenAI
+                The way to API call the bot
 
     Returns:
         None
@@ -180,4 +203,7 @@ def finalize_interview(interview, transcript_messages, talent):
     write_transcript_to_db(interview, transcript_messages)
 
     print("TESTING: transcript stored sucessfully!!!")
+
+    score_interview(interview, client=client)
+    print("TESTING: Scoring complete.")
 

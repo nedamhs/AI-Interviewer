@@ -48,8 +48,10 @@ def write_transcript_to_db(interview: Interview, messages: list)-> None:
             bot_msg = messages[i]
             user_msg = messages[i + 1]
             if bot_msg["role"] == "assistant" and user_msg["role"] == "user":
+                category = bot_msg.get("category", None)
                 Transcript.objects.create(session_id=session_id, interview=interview,
-                                         question=bot_msg["content"], answer=user_msg["content"])
+                                         question=bot_msg["content"], answer=user_msg["content"],
+                                         category=category)
                 i += 2
                 continue
 
@@ -58,8 +60,10 @@ def write_transcript_to_db(interview: Interview, messages: list)-> None:
         
         #unpaired Q
         if msg["role"] == "assistant":
+            category = msg.get("category", None)
             Transcript.objects.create(session_id=session_id  , interview=interview,
-                                      question=msg["content"], answer="" )
+                                      question=msg["content"], answer="",
+                                      category=category )
 
         #unpaired A
         elif msg["role"] == "user":

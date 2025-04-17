@@ -15,3 +15,24 @@ class Transcript(Timestampable):
     
     def __str__(self):
         return f"Transcript ({self.session_id}) for {self.interview.candidate.user.first_name} - {self.interview.job.title}"
+
+
+class CategoryChoices(models.TextChoices):
+    LOCATION = "location"
+    AVAILABILITY = "availability"
+    SCHEDULE = "schedule"
+    ACADEMIC_BACKGROUND = "academic_background"
+    INTEREST = "interest"
+    PREV_EXPERIENCE = "prev_experience"
+    TEAMWORK = "teamwork"
+    COMMUNICATION = "communication"
+    PREFERENCE = "preference"
+
+class InterviewScore(models.Model):  
+    interview = models.ForeignKey(Interview,on_delete=models.CASCADE, related_name="scores")
+    category = models.CharField(max_length=50,choices=CategoryChoices.choices)
+    score = models.FloatField(null=True, blank=True)
+    reason = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.interview} - {self.category}: {self.score}"

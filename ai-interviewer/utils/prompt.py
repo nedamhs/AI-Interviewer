@@ -27,24 +27,28 @@ def location_prompt(min_dist : int, remote_option : bool) -> str:
     return "\n".join(questions)
 
 def availability_prompt() -> str:
-    return """ Ask When they are available to start the job, and for how long?
-    Ask if they are available to work full-time for the job? """.strip()
+    return """ Based on the provided resume and job description, ask the candidate:
+    Ask When they are available to start the job, and for how long?
+    Whether they are open to full-time, part-time, or internship roles.”? """.strip()
 
 def schedule_prompt() -> str:
     return """ Ask about their preferred work schedule and if they are flexible with hours
     Ask how do you plan to manage your time effectively, If this role is hybrid/remote """.strip()
     
 def academic_background_prompt() -> str:
-    return """Ask about about their current academic status and your major
-    Ask What they are currently studying, and how it aligns with this role""".strip()
+    return """Using the academic information from the resume, ask:
+    Ask about about their current academic status.
+    Ask how their educational background X (listed in the provided resume) aligns with this role""".strip()
 
 def interest_prompt() -> str:
-    return """Ask What attracts them to our company and How does it fit with your career goals?""".strip()
+    return """Using the job description and company details, ask:
+    Ask What attracts them to the company X (listed in job description) and How does it fit with their career goals?""".strip()
 
 def prev_experience_prompt() -> str:
-    return """Ask about any of their previous experience at their previous Company X (listed in the provided resume).
-              ASk if they have any previous work experiences, If yes, Ask about their role
-              Ask What skills did they gain from their past experience that will be valuable in this role?""".strip()
+    return """Based on the candidate's previous roles listed in the resume:
+              Ask about any of their previous experience at their previous Company X (listed in the provided resume).
+              Ask What skills did they gain from their past experience that will be valuable in this role?
+              How do those skills apply to the responsibilities listed in this role?""".strip()
 
 def teamwork_prompt() -> str:
     return """Ask them about a time when you worked in a team? What was their role, and how did they contribute?
@@ -81,11 +85,12 @@ def randomize_prompts() -> list[str]:
     must_ask_list = [
     availability_prompt(),
     schedule_prompt(), 
-    academic_background_prompt(),
+    prev_experience_prompt(),
     interest_prompt(), 
     ]
 
-    optional = [prev_experience_prompt(), 
+    optional = [
+    academic_background_prompt(),
     teamwork_prompt(), 
     communication_prompt(), 
     preference_prompt()]
@@ -144,7 +149,7 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     **Candidate location:** {talent_location_names}
     **Candidate Resume Summary:**{talent.resume.clean_text}
     """
-
+    file_string += """ALWAYS START WITH LOCATION QUESTIONS"""
     file_string += location_prompt(min_dist, job.remote_option )  
     file_string += f"\n\n".join(randomize_prompts())     # other prompts in random order
     file_string += """Closing the Interview:
@@ -156,6 +161,11 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     Ask similar questions one by one. Don't explain answers just keep it brief."""
 
     file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
+    
+    file_string += '\nOnly return ONE JSON object per response. Do not return multiple JSONs or wrap them in arrays. Just a single object like: {\"category\": \"interest\", \"question\": \"...\"}'
+
+    file_string += "\nONLY CALL THE END_INTERVIEW TOOL IF MOST OF THE KEY CATEGORIES ARE ASKED"
+
     #print(file_string) #TESTING
     
     return file_string
