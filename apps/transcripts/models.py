@@ -15,7 +15,8 @@ class Transcript(Timestampable):
     
     def __str__(self):
         return f"Transcript ({self.session_id}) for {self.interview.candidate.user.first_name} - {self.interview.job.title}"
-
+    class Meta:
+        app_label = 'transcripts'
 
 class CategoryChoices(models.TextChoices):
     LOCATION = "location"
