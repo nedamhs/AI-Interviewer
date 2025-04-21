@@ -3,9 +3,9 @@ from transcripts.models import Transcript, InterviewScore
 from django.shortcuts import get_object_or_404, render
 
 
-# Get all transcripts for an interview session
-def get_transcripts(request, session_id):
-    transcripts = Transcript.objects.filter(session_id=session_id)
+# Get all transcripts for all interview sessions
+def get_all_transcripts(request):
+    transcripts = Transcript.objects.all()
     transcript_data = [
         {
             "question": transcript.question,

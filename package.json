@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack --mode development --watch"
+    "dev": "webpack --mode development --watch",
+    "build": "webpack --config webpack.config.js --mode production"
   },
   "keywords": [],
   "author": "",
@@ -19,6 +20,7 @@
     "webpack-cli": "^5.1.4"
   },
   "dependencies": {
+    "axios": "^1.8.4",
     "lodash": "^4.17.21",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
