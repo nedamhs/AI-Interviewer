@@ -7,8 +7,8 @@ from utils.openai_functions import end_interview
 from audio_utils.audio_transcriber import Transcriber
 import os
 import django
-import time
-
+from audio_utils.texttospeech import text_to_audio
+import asyncio
 load_dotenv()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
@@ -45,6 +45,7 @@ def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:
     
     update_history("assistant", conversation_history, transcript_messages,bot_reply)
     print("Interviewer: ", bot_reply)
+    asyncio.run(text_to_audio(bot_reply))
 
     # start interview starting transcriber and interview model
     transcriber = Transcriber()

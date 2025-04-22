@@ -16,6 +16,12 @@ from profiles.models import TalentProfile
 from jobs.models import Job
 from locations.models import Location
 from .distances import calculate_distance
+import asyncio
+from audio_utils.texttospeech import text_to_audio
+
+#one loop as default
+_LOOP = asyncio.new_event_loop()
+asyncio.set_event_loop(_LOOP)
 
 def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI, transcriber:Transcriber) -> None:
         '''
@@ -83,7 +89,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             if bot_reply and ("open to relocating" in bot_reply.lower().strip() or "willing to commute" in bot_reply.lower().strip()) and min_dist > 50:
                     if user_input.lower().strip() in ["no", "i can't", "not willing to relocate", "nope", "not sure"]:
                         reconsideration_msg = "Are you sure? This may mean you are not eligible for this position."
-                        print("Interviewer:", reconsideration_msg)
+                        interviewerSpeak( reconsideration_msg)
                         update_history("assistant", conversation_history, transcript_messages, reconsideration_msg)
                         bot_reply = reconsideration_msg
                         relocation_flag = True
@@ -93,14 +99,14 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             if relocation_flag:
                 if user_input.lower().strip() in ["yes", "yeah", "correct", "that's right"]:
                     final_msg = "Thank you for confirming. Unfortunately, we cannot proceed further since the job requires relocation/commuting."
-                    print("Interviewer:", final_msg)
+                    interviewerSpeak( final_msg)
                     bot_reply = final_msg
                     update_history("assistant", conversation_history, transcript_messages, final_msg)
                     write_to_transcript(talent.user.id, talent.user.first_name, messages=transcript_messages)
                     return
                 elif user_input.lower().strip() in ["no", "actually, i can", "i changed my mind"]:
                     confirmation_msg = "Thanks for clarifying! Let's move on."
-                    print("Interviewer:", confirmation_msg)
+                    interviewerSpeak(confirmation_msg)
                     update_history("assistant", conversation_history, transcript_messages, confirmation_msg)
                     bot_reply = confirmation_msg
                     print(bot_reply.lower())
@@ -112,7 +118,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 bot_reply = bot_response.content
                 bot_tools = bot_response.tool_calls
                 
-                print("Interviewer:", bot_reply)
+                interviewerSpeak(bot_reply)
 
                 update_history("assistant", conversation_history, transcript_messages, bot_reply)
 
@@ -133,6 +139,10 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
 
             except Exception as e:
                 print("Error communicating with OpenAI API:", str(e))
+
+def interviewerSpeak(bot_reply: str)-> None:
+    print("Interviewer:" , bot_reply)
+    _LOOP.run_until_complete(text_to_audio(bot_reply))
 
 
 def process_location_update(user_input: str, job_locations: list) -> tuple[str, float]:
