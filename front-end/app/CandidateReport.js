@@ -7,7 +7,8 @@ const CandidateReport = ({ interviewId }) => {
     const [showTranscript, setShowTranscript] = useState(false);
 
     useEffect(() => {
-        axios.get(`/api/scores/${interviewId}`)
+        // axios.get(`/api/scores/${interviewId}`)
+        axios.get(`/api/transcripts/?interview_id=${interviewId}`)
             .then(res => setScores(res.data))
             .catch(err => console.error('Error fetching scores:', err));
 

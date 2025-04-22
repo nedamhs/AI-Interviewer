@@ -17,7 +17,12 @@ def get_all_interviews(request):
 
 # Get all transcripts for all interview sessions
 def get_all_transcripts(request):
+    interview_id = request.GET.get('interview_id')
     transcripts = Transcript.objects.all()
+
+    if interview_id:
+        transcripts = transcripts.filter(interview_id=interview_id)
+        
     transcript_data = [
         {
             "question": transcript.question,
