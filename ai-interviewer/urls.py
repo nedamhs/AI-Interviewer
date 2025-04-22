@@ -16,7 +16,15 @@ api_docs = [
 ]
 urlpatterns += api_docs
 
+# urlpatterns += [
+#     path('api/transcripts/', views.get_all_transcripts, name='get_all_transcripts'),
+#     path('api/scores/<int:interview_id>/', views.get_interview_scores, name='get_interview_scores'),
+# ]
+
+
 urlpatterns += [
+    path('api/interviews/', views.get_all_interviews, name='get_all_interviews'),
     path('api/transcripts/', views.get_all_transcripts, name='get_all_transcripts'),
     path('api/scores/<int:interview_id>/', views.get_interview_scores, name='get_interview_scores'),
 ]
+
