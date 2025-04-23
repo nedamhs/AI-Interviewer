@@ -8,9 +8,6 @@ from dotenv import load_dotenv
 
 # load .env file 
 load_dotenv()
-if not os.path.exists('.env'):
-    print("Error: .env file not found.")
-    exit()
 
 # get creds from .env variables
 ACCOUNT_ID = os.environ.get("ACCOUNT_ID")
@@ -83,23 +80,26 @@ def create_zoom_meeting(token) -> dict:
         'Content-Type': 'application/json'
     }
 
-    # meeting details
     meeting_details = {
-        "topic": "Automated Python Meeting",
-        "type": 1,  # 1: Instant Meeting, 2: Scheduled Meeting, 3: Recurring Meeting (No Fixed Time), 8: Recurring Meeting (Fixed Time)
-        # "start_time": (datetime.utcnow() + timedelta(minutes=5)).strftime('%Y-%m-%dT%H:%M:%SZ'), # Optional: For scheduled meetings (Type 2 or 8). Must be UTC.
-        "duration": 30,  # Duration in minutes
-        "timezone": "UTC", # Best practice to use UTC
+        "topic": "Pairwise Screening Interview",
+        "type": 2,
+        "start_time": "2025-04-23T07:15:00Z", # CHANGE THIS TO A FUTURE TIME 
+        "duration": 60,
+        "timezone": "America/Los_Angeles",
+        "password": "pairwise",
         "settings": {
             "host_video": True,
             "participant_video": False,
-            "join_before_host": False,
+            "join_before_host": True,
             "mute_upon_entry": True,
-            "waiting_room": True,
+            "waiting_room": False,
+            "password" : "balls",
             "audio": "both", # 'voip', 'telephony', 'both'
-            "auto_recording": "none" # 'local', 'cloud', 'none'
-        }
+            "auto_recording": "none", # 'local', 'cloud', 'none',
+            "meeting_authentication": False # makes sure that only authenticated users can join the meeting
+            }
     }
+
     # For Instant Meeting (type 1), remove start_time if present
     if meeting_details["type"] == 1 and "start_time" in meeting_details:
         del meeting_details["start_time"]
@@ -138,7 +138,7 @@ def launch_meeting(meeting_info) -> None:
         print(f"Launching meeting (Host URL): {start_url}")
         
         # comment out to disable auto-launch
-        webbrowser.open(start_url)
+        #webbrowser.open(start_url)
 
         # url for participants to join
         # use this to send to candidates
