@@ -167,6 +167,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                             # In a non-terminal version, this would be saved to a database, not shown to interviewee
                             print("\nInterviewer [For admin]:", args["summary"]) 
                             interview_summary =  args["summary"] # store this somewhere in db later
+                            interview.summary = interview_summary 
                             end = True
                     if end:
                         finalize_interview(interview, transcript_messages, talent, client)

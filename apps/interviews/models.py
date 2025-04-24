@@ -40,3 +40,6 @@ class Interview(Timestampable):
             choices=InterviewStatusChoices.choices,
             default=InterviewStatusChoices.SCHEDULED,
         )
+
+    final_score = models.FloatField(null=True, blank=True, help_text="Final weighted score for the interview")
+    summary = models.TextField(null=True, blank=True, help_text="Final summary of the interview")

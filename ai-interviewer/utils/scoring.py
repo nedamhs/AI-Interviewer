@@ -4,6 +4,12 @@ import json
 from transcripts.models import Transcript, InterviewScore, CategoryChoices
 from interviews.models import Interview 
 
+# from collections import Counter
+# from transformers import pipeline
+
+#model
+# sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
+
 
 def score_interview(interview: Interview, client:OpenAI) -> None:
     """
@@ -29,7 +35,7 @@ def score_interview(interview: Interview, client:OpenAI) -> None:
 
         # get all q/a pair for this categorys
         qa_pairs = Transcript.objects.filter(interview=interview, category=category)
-        
+
         # append all pairs for this category
         qa_str = ""
         for pair in qa_pairs:
@@ -41,7 +47,30 @@ def score_interview(interview: Interview, client:OpenAI) -> None:
 
         # store in db
         InterviewScore.objects.update_or_create(interview=interview, category=category,
-                                                 defaults={"score": score,"reason": reason })
+                                                 defaults={"score": score,"reason": reason})
+
+        # sentiments = []
+        # for pair in qa_pairs:
+        #     result = sentiment_analyzer(pair.answer)[0]
+        #     sentiments.append(result['label'].lower())  
+        
+        # # majority sentiment
+        # sentiment_counts = Counter(sentiments)
+        # dominant_sentiment = sentiment_counts.most_common(1)[0][0]
+
+        # InterviewScore.objects.update_or_create(interview=interview, category=category, defaults={"score": score,"reason": reason, "sentiment": dominant_sentiment})
+
+
+    scores = InterviewScore.objects.filter(interview=interview).values_list('score', flat=True)
+
+    if scores:
+        final_score = sum(scores) / len(scores)  #AVG 
+        final_score = round(final_score, 2)
+        interview.final_score = final_score
+        interview.save()
+
+    print("Testing: Final Score: ", final_score)
+
 
 
 def get_score(client:OpenAI , category: str , qa_text: str)  -> tuple[float | None, str]:

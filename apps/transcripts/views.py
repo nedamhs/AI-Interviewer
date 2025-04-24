@@ -3,17 +3,6 @@ from transcripts.models import Transcript, InterviewScore
 from interviews.models import Interview
 from django.shortcuts import get_object_or_404, render
 
-def get_all_interviews(request):
-    interviews = Interview.objects.all()
-    data = [
-        {
-            "id": interview.id,
-            "candidate_name": interview.candidate.user.first_name,
-            "job_title": interview.job.title,
-        }
-        for interview in interviews
-    ]
-    return JsonResponse(data, safe=False)
 
 # Get all transcripts for all interview sessions
 def get_all_transcripts(request):

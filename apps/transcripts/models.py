@@ -34,6 +34,7 @@ class InterviewScore(models.Model):
     category = models.CharField(max_length=50,choices=CategoryChoices.choices)
     score = models.FloatField(null=True, blank=True)
     reason = models.TextField(null=True, blank=True)
+    sentiment = models.CharField(max_length=20, null=True, blank=True, help_text="Sentiment of the answer: positive, neutral, negative")
 
     def __str__(self):
         return f"{self.interview} - {self.category}: {self.score}"

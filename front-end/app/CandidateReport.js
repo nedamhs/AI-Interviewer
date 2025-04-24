@@ -65,16 +65,30 @@ const CandidateReport = () => {
     const [scores, setScores] = useState([]);
     const [transcript, setTranscript] = useState([]);
     const [showTranscript, setShowTranscript] = useState(false);
+    const [summary, setSummary] = useState('');
+    const [finalScore, setFinalScore] = useState(null);
+    const [candidateName, setCandidateName] = useState('');
+    const [jobTitle, setJobTitle] = useState('');
+
+
 
     useEffect(() => {
+        axios.get(`/api/interview/${interviewId}/details/`)
+            .then(res => {setSummary(res.data.summary);
+                           setFinalScore(res.data.final_score);
+                           setCandidateName(res.data.candidate_name);
+                           setJobTitle(res.data.job_title);})
+            .catch(err => console.error('Error fetching interview details:', err));
+    
         axios.get(`/api/scores/${interviewId}`)
             .then(res => setScores(res.data))
             .catch(err => console.error('Error fetching scores:', err));
-
+    
         axios.get(`/api/transcripts/?interview_id=${interviewId}`)
             .then(res => setTranscript(res.data))
             .catch(err => console.error('Error fetching transcript:', err));
     }, [interviewId]);
+    
 
     return (
         <div>
@@ -86,7 +100,19 @@ const CandidateReport = () => {
     
             <div style={pageStyle}>
                 <h2>Candidate Report for Interview ID: {interviewId}</h2>
-    
+                <p><strong>Candidate:</strong> {candidateName}</p>
+                <p><strong>Job Title:</strong> {jobTitle}</p>
+                <p>
+                     <strong>Final Score: </strong>
+                        <span style={{ ...scoreStyle, color: getScoreColor(finalScore) }}>
+                              {finalScore !== null ? `${finalScore}/10` : 'Not available'}
+                         </span>
+                </p>
+
+            <div style={cardStyle}>
+                <p style={reasonStyle}><strong>Summary:</strong> {summary || 'No summary available.'}</p>
+            </div>
+
                 {scores.map((item, idx) => (
                     <div style={cardStyle} key={idx}>
                         <h3>{item.category}</h3>
