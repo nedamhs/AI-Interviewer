@@ -7,7 +7,7 @@ from utils.openai_functions import end_interview
 from audio_utils.audio_transcriber import Transcriber
 import os
 import django
-from audio_utils.texttospeech import text_to_audio
+from audio_utils.text_to_speech import text_to_audio
 import asyncio
 load_dotenv()
 
