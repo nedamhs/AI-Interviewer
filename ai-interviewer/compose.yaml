@@ -1,0 +1,11 @@
+services:
+  develop: &develop
+    build:
+      context: ./interviewer-bot
+      dockerfile: Dockerfile
+    volumes:
+     - .:/tmp/zoom-container
+    ports:
+      - "3000:3000"
+    env_file:
+      - ../.env
