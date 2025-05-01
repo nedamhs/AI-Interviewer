@@ -1,14 +1,16 @@
-from .openai_functions import end_interview
 import time
 import json
+import django
+import os
+import asyncio
+from .openai_functions import end_interview
 from .transcript import write_to_transcript
 from .bot import get_bot_response
 from .inputs import get_user_input,update_history
 from audio_utils.text_to_speech import text_to_audio
 from audio_utils.audio_transcriber import Transcriber
+from audio_utils.texttospeech import text_to_audio
 from openai import OpenAI
-import django
-import os
 from dotenv import load_dotenv
 load_dotenv()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
@@ -69,8 +71,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             
             print("You: ", end='', flush=True)
             # user_input = get_user_input()
-            # popped from audio queue of audio transcriber
-            user_input = transcriber.transcript_queue.get()
+            user_input = transcriber.transcript_queue.get() # popped from audio queue of audio transcriber
             print(f"{user_input}\n")
             if user_input.lower() == "exit": # remove later
                 write_to_transcript(talent.user.id, talent.user.first_name, messages=transcript_messages)
@@ -89,7 +90,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             if bot_reply and ("open to relocating" in bot_reply.lower().strip() or "willing to commute" in bot_reply.lower().strip()) and min_dist > 50:
                     if user_input.lower().strip() in ["no", "i can't", "not willing to relocate", "nope", "not sure"]:
                         reconsideration_msg = "Are you sure? This may mean you are not eligible for this position."
-                        interviewerSpeak( reconsideration_msg)
+                        interviewerSpeak(reconsideration_msg)
                         update_history("assistant", conversation_history, transcript_messages, reconsideration_msg)
                         bot_reply = reconsideration_msg
                         relocation_flag = True
@@ -99,7 +100,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             if relocation_flag:
                 if user_input.lower().strip() in ["yes", "yeah", "correct", "that's right"]:
                     final_msg = "Thank you for confirming. Unfortunately, we cannot proceed further since the job requires relocation/commuting."
-                    interviewerSpeak( final_msg)
+                    interviewerSpeak(final_msg)
                     bot_reply = final_msg
                     update_history("assistant", conversation_history, transcript_messages, final_msg)
                     write_to_transcript(talent.user.id, talent.user.first_name, messages=transcript_messages)

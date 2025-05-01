@@ -82,8 +82,8 @@ def create_zoom_meeting(token) -> dict:
 
     meeting_details = {
         "topic": "Pairwise Screening Interview",
-        "type": 2,
-        "start_time": "2025-04-23T07:15:00Z", # CHANGE THIS TO A FUTURE TIME 
+        "type": 1, # 1 for instant meeting, 2 for scheduled meeting
+        "start_time": "2025-04-24T015:34:00Z", # CHANGE THIS TO A FUTURE TIME 
         "duration": 60,
         "timezone": "America/Los_Angeles",
         "password": "pairwise",
@@ -138,7 +138,7 @@ def launch_meeting(meeting_info) -> None:
         print(f"Launching meeting (Host URL): {start_url}")
         
         # comment out to disable auto-launch
-        #webbrowser.open(start_url)
+        webbrowser.open(start_url)
 
         # url for participants to join
         # use this to send to candidates
