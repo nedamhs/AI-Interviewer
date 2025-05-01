@@ -4,6 +4,7 @@ import json
 from .transcript import write_to_transcript
 from .bot import get_bot_response
 from .inputs import get_user_input,update_history
+from audio_utils.text_to_speech import text_to_audio
 from audio_utils.audio_transcriber import Transcriber
 from openai import OpenAI
 import django
@@ -17,7 +18,6 @@ from jobs.models import Job
 from locations.models import Location
 from .distances import calculate_distance
 import asyncio
-from audio_utils.texttospeech import text_to_audio
 
 #one loop as default
 _LOOP = asyncio.new_event_loop()
