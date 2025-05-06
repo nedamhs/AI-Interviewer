@@ -56,8 +56,14 @@ RUN apt-get update && apt-get install -y linux-libc-dev
 RUN apt-get update && apt-get install -y universal-ctags
 
 # Install python dependencies
-RUN pip install pyjwt cython gdown python-dotenv opencv-python numpy
+RUN pip install pyjwt cython python-dotenv opencv-python numpy
+
+# Copy requirements.txt first (for cache)
+COPY requirements.txt .
+
+# Install python dependencies through requirements
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY / .
 
-CMD ["python3", "test.py"]
+CMD ["python3", "launch.py"]

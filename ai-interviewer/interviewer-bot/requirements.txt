@@ -1,0 +1,9 @@
+# requirements for the docker container
+
+Cython==3.0.12
+numpy==2.2.5
+opencv-python==4.11.0.86
+PyJWT==2.10.1
+python-dotenv==1.1.0
+requests==2.32.3
+zoom-meeting-sdk==0.0.20
