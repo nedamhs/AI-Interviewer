@@ -128,7 +128,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                     relocation_reconsideration_flag = True #flag for HR
          
             try:
-
+                #if more than three followups, move on
                 if bot_reply and category:
                     action, followup_suggestion = evaluate_response_action(client, category, bot_reply, user_input)
                     if action in ["follow_up", "re_ask"] and followup_suggestion:
