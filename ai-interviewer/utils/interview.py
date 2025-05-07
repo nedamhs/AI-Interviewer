@@ -17,7 +17,8 @@ from locations.models import Location
 from .distances import calculate_distance, process_location_update
 from django.utils import timezone
 from interviews.models import Interview, InterviewStatusChoices
-from .scoring import score_interview 
+from .scoring import score_interview
+from .evaluator import  evaluate_response_action
 
 
 def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
@@ -59,7 +60,8 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                                              status=InterviewStatusChoices.SCHEDULED)
 
         bot_reply = "" 
-
+        category = None
+        followup_count = 0 
         while True:
             if  warning_flag == False and time.time() - start_time >= max_time - 60:
                 warning_msg = "Warning: The interview will end in 1 minute."
@@ -126,6 +128,19 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                     relocation_reconsideration_flag = True #flag for HR
          
             try:
+
+                if bot_reply and category:
+                    action, followup_suggestion = evaluate_response_action(client, category, bot_reply, user_input)
+                    if action in ["follow_up", "re_ask"] and followup_suggestion:
+                        if followup_count < 3:
+                            print("\nInterviewer (follow-up):", followup_suggestion)
+                            update_history("assistant", conversation_history, transcript_messages, followup_suggestion)
+                            bot_reply = followup_suggestion
+                            followup_count += 1
+                            continue  # Wait for user's answer to follow-up before proceeding
+                        else:
+                            # Exceeded follow-up threshold; reset counter and proceed to next question
+                            followup_count = 0
 
                 bot_response = get_bot_response(client, conversation_history=conversation_history, tools=[end_interview()])
                 #print(bot_response.content)
