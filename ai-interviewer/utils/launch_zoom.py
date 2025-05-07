@@ -133,20 +133,42 @@ def create_zoom_meeting(token) -> dict:
 
 
 def launch_meeting(meeting_info) -> None:
+    """
+    
+    Launches the Zoom meeting and returns the meeting ID and password.
+    
+    """
     if meeting_info and 'start_url' in meeting_info:
         start_url = meeting_info['start_url']
         print(f"Launching meeting (Host URL): {start_url}")
         
+
+        
         # comment out to disable auto-launch
         webbrowser.open(start_url)
 
-        # url for participants to join
-        # use this to send to candidates
-        print(f"Participant Join URL: {meeting_info.get('join_url')}")
+        # url for participants to join; use this to send to candidates
+        participant_url = meeting_info.get('join_url')
+        meeting_pwd = participant_url.split("pwd=")[-1].split(".")[0]
+        print(f"Participant Join URL: {participant_url}")
+        os.environ["MEETING_ID"] = str(meeting_info.get('id'))
+        os.environ["MEETING_PWD"] = meeting_pwd
     else:
         print("Could not launch meeting. Start URL not found in meeting info.")
 
 # run as script will automatically launch meeting
+def main() -> None:
+    """
+    
+    Main function to create and launch a Zoom meeting.
+    
+    """
+    access_token = get_access_token()
+    if access_token:
+        new_meeting = create_zoom_meeting(access_token)
+        if new_meeting:
+            launch_meeting(new_meeting)
+
 if __name__ == "__main__":
     access_token = get_access_token()
     if access_token:
