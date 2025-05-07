@@ -1,16 +1,16 @@
-import zoom_meeting_sdk as zoom
-import jwt
-# from deepgram_transcriber import DeepgramTranscriber
-from datetime import datetime, timedelta
 import os
-
 import cv2
-import numpy as np
 import gi
-gi.require_version('GLib', '2.0')
-from gi.repository import GLib
+import jwt
 
+from gi.repository import GLib
+from datetime import datetime, timedelta
+import numpy as np
+
+import zoom_meeting_sdk as zoom
 from zoom_auth import get_zak
+
+gi.require_version('GLib', '2.0')
 
 def save_yuv420_frame_as_png(frame_bytes, width, height, output_path):
     try:

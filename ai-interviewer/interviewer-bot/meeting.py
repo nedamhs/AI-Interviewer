@@ -1,8 +1,8 @@
 import requests
-import os
-import base64
 import json
+
 from dotenv import load_dotenv
+
 from zoom_auth import get_access_token
 
 # load .env file 

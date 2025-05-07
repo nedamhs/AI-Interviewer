@@ -1,18 +1,14 @@
-import zoom_meeting_sdk as zoom
-import time
-import jwt
-from datetime import datetime, timedelta
-from typing import Callable, Optional
-import asyncio
+import signal
+import gi
+import os
+
+from dotenv import load_dotenv
+from gi.repository import GLib
+
 from meetingbot import MeetingBot
 from meeting import Meeting
-from dotenv import load_dotenv
-import signal
-import sys
-import gi
+
 gi.require_version('GLib', '2.0')
-from gi.repository import GLib
-import os
 
 class ZoomBotRunner:
     def __init__(self):
