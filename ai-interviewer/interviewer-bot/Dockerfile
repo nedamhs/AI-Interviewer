@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM --platform=linux/amd64 ubuntu:22.04
 
 RUN apt-get update && \
     apt-get install -y python3 python3-pip
@@ -52,6 +52,8 @@ COPY requirements.txt .
 # Install python dependencies through requirements
 RUN pip install --no-cache-dir -r requirements.txt
 
+RUN ln -s /usr/bin/python3 /usr/bin/python
+
 COPY / .
 
-CMD ["python3", "launch.py"]
+CMD ["python", "launch.py"]
