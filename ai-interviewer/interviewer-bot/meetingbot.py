@@ -4,6 +4,7 @@ import gi
 import jwt
 
 from gi.repository import GLib
+from deepgram_transcriber import DeepgramTranscriber
 from datetime import datetime, timedelta
 import numpy as np
 
@@ -113,7 +114,7 @@ class MeetingBot:
         self.audio_raw_data_sender = None
         self.virtual_audio_mic_event_passthrough = None
 
-        # self.deepgram_transcriber = DeepgramTranscriber()
+        self.deepgram_transcriber = DeepgramTranscriber()
 
         self.my_participant_id = None
         self.other_participant_id = None
@@ -302,19 +303,19 @@ class MeetingBot:
             self.audio_print_counter += 1
             return
 
-    #     if node_id != self.my_participant_id:
-    #         self.write_to_deepgram(data) 
+        if node_id != self.my_participant_id:
+            self.write_to_deepgram(data) 
        
-    # def write_to_deepgram(self, data):
-    #     try:
-    #         buffer_bytes = data.GetBuffer()
-    #         self.deepgram_transcriber.send(buffer_bytes)
-    #     except IOError as e:
-    #         print(f"Error: failed to open or write to audio file path: {path}. Error: {e}")
-    #         return
-    #     except Exception as e:
-    #         print(f"Unexpected error occurred: {e}")
-    #         return
+    def write_to_deepgram(self, data):
+        try:
+            buffer_bytes = data.GetBuffer()
+            self.deepgram_transcriber.send(buffer_bytes)
+        except IOError as e:
+            print(f"Error: failed to open or write to audio file path: {path}. Error: {e}")
+            return
+        except Exception as e:
+            print(f"Unexpected error occurred: {e}")
+            return
 
     def write_to_file(self, path, data):
         try:

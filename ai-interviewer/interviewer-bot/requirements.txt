@@ -7,3 +7,4 @@ PyJWT==2.10.1
 python-dotenv==1.1.0
 requests==2.32.3
 zoom-meeting-sdk==0.0.20
+deepgram-sdk==4.0.0
