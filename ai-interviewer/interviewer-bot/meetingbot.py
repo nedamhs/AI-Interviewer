@@ -9,7 +9,10 @@ from datetime import datetime, timedelta
 import numpy as np
 
 import zoom_meeting_sdk as zoom
+import time
 from zoom_auth import get_zak
+from audio_utils.text_to_speech import text_to_audio
+import asyncio
 
 gi.require_version('GLib', '2.0')
 
@@ -285,14 +288,11 @@ class MeetingBot:
 
     def on_mic_start_send_callback(self):
         print("on_mic_start_send_callback called")
-        audio_path = 'sample_program/input_audio/test_audio_16778240.pcm'
-        if not os.path.exists(audio_path):
-            print(f"Audio file not found: {audio_path}")
-            return
-            
-        with open(audio_path, 'rb') as pcm_file:
-            chunk = pcm_file.read(64000*10)
-            self.audio_raw_data_sender.send(chunk, 32000, zoom.ZoomSDKAudioChannel_Mono)
+        time.sleep(20)
+        asyncio.run(text_to_audio("this is an extremely long test to ensure that this is a proper working function and that I am allowed to write extremely long things into this without it breaking on me due to zoom logic.", self.send_to_zoom))
+
+    def send_to_zoom(self, data: bytes, rate: int):
+        self.audio_raw_data_sender.send(data, rate, zoom.ZoomSDKAudioChannel_Mono)
 
     def on_one_way_audio_raw_data_received_callback(self, data, node_id):
         if os.environ.get('DEEPGRAM_API_KEY') is None:
