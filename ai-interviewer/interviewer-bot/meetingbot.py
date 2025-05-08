@@ -139,7 +139,8 @@ class MeetingBot:
 
         self.chat_ctrl = None
         self.chat_ctrl_event = None
-
+        #event loop for async call
+        self._LOOP = None
     def cleanup(self):
         if self.meeting_service:
             zoom.DestroyMeetingService(self.meeting_service)
@@ -284,12 +285,20 @@ class MeetingBot:
 
     def on_mic_initialize_callback(self, sender):
         print("on_mic_initialize_callback called")
+        #event loop initialized for tts
+        self._LOOP = asyncio.new_event_loop()
+        asyncio.set_event_loop(self._LOOP)
+
         self.audio_raw_data_sender = sender
 
     def on_mic_start_send_callback(self):
         print("on_mic_start_send_callback called")
         time.sleep(20)
-        asyncio.run(text_to_audio("this is an extremely long test to ensure that this is a proper working function and that I am allowed to write extremely long things into this without it breaking on me due to zoom logic.", self.send_to_zoom))
+        self.tts("this is an extremely long test to ensure that this is a proper working function and that I am allowed to write extremely long things into this without it breaking on me due to zoom logic.")
+
+    def tts(self, text):
+        '''TTS '''
+        self._LOOP.run_until_complete(text_to_audio(text, self.send_to_zoom))
 
     def send_to_zoom(self, data: bytes, rate: int):
         self.audio_raw_data_sender.send(data, rate, zoom.ZoomSDKAudioChannel_Mono)

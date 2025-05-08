@@ -11,7 +11,7 @@ openai = AsyncOpenAI(api_key=os.environ.get("OPENAI-API-KEY"))
 
 #NEED TO SPECIFY
 RATE = 24000 
-BLOCK_SIZE = 256
+BLOCK_SIZE = 512
 
 def resample_pcm_24k_to_32k(pcm_bytes: bytes) -> bytes:
     audio_24k = np.frombuffer(pcm_bytes, dtype='<i2')  # little-endian 16-bit PCM
