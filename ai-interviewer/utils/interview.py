@@ -19,9 +19,10 @@ from django.utils import timezone
 from interviews.models import Interview, InterviewStatusChoices
 from .scoring import score_interview
 from .evaluator import  evaluate_response_action
+from .prompt import *
 
 
-def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
+def conduct_interview(interview: Interview, talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
         '''
         Main structured function for conducting the screening interview
 
@@ -40,29 +41,20 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
         Returns:
             None
         '''
-        start_time = time.time()
+        #get start time from obj, convert to float
+        start_time = interview.start.timestamp()  
         max_time = 15 * 60  # max time in seconds 
         warning_flag = False
-        relocation_flag = False
-        relocation_reconsideration_flag = False
-
-        job_locations = job.locations.all()  # get all job locations
-        talent_locations = talent.locations.all() # get all talent location
-        curr_location = talent_locations[0].display_name if talent_locations else "Unknown" # get curr location in case of location update
-        #print("TEST, CURR_LOCATION:", curr_location)
-
-        distances = calculate_distance(job_locations, talent_locations)
-        min_dist = min(distances, key=lambda x: x[2])[2] #sort by dist, get min
-
-        # creating interview obj 
-        interview = Interview.objects.create(candidate=talent, job=job,
-                                             start = timezone.now(),  # start time
-                                             status=InterviewStatusChoices.SCHEDULED)
 
         bot_reply = "" 
-        category = None
-        followup_count = 0 
-        while True:
+        
+        items = list(PROMPT_DICT.items())
+        random.shuffle(items)
+
+        for category, questions in items: 
+            #print(f"\nTESTING: CURRENT CATEGORY: {category}")
+            category_q_a_pairs = "" 
+
             if  warning_flag == False and time.time() - start_time >= max_time - 60:
                 warning_msg = "Warning: The interview will end in 1 minute."
                 print(warning_msg) #remove later
@@ -74,123 +66,80 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 print(timed_ending_msg) #remove later
                 update_history("assistant", conversation_history, transcript_messages, timed_ending_msg)
                 finalize_interview(interview, transcript_messages, talent, client)
-                break
+                return
             
-            print("You: ", end='', flush=True)
-            user_input = get_user_input()
-            update_history("user", conversation_history, transcript_messages, user_input)
+            try: 
+                for question in questions: 
+                    instruction =  f""" you are an ai interviewer, ask the following interview question in a friendly and personalized way:
+                     Take the information from their resume to tailor/personalize the questions for the candidate.{question}
+                     before asking the question, provide feedback on previous response given by the user."""
 
-            if user_input.lower() == "exit": 
-                goodbye_msg = "Goodbye! have a great day."
-                print(goodbye_msg) # remove later
-                update_history("assistant", conversation_history, transcript_messages, goodbye_msg)
-                finalize_interview(interview, transcript_messages, talent, client)
-                break
+                    conversation_history.append({"role": "user", "content": instruction})
+                    bot_response = get_bot_response(client, conversation_history, tools=[end_interview()])
 
-            if bot_reply and ("currently located" in bot_reply.lower().strip() or "current location" in bot_reply.lower().strip()):
-                print("TEST: processing location change")
-                updated_location, updated_dist = process_location_update(user_input, job_locations)
-
-                if updated_location != "Invalid": 
-                    curr_location = updated_location
-                    min_dist = updated_dist
-                    print(f"updated current location to {curr_location}")
-
-            # asking the first relocation question
-            if bot_reply and ("open to relocating" in bot_reply.lower().strip() or "willing to commute" in bot_reply.lower().strip() or "open to moving" in bot_reply.lower().strip()) and min_dist > 50:
-                    if user_input.lower().strip() in ["no", "i can't", "not willing to relocate", "nope", "not sure"]:
-                        reconsideration_msg = "Are you sure? This may mean you are not eligible for this position."
-                        print("Interviewer:", reconsideration_msg) # remove later
-                        update_history("assistant", conversation_history, transcript_messages, reconsideration_msg)
-                        bot_reply = reconsideration_msg
-                        relocation_flag = True
-                        continue
-
-            # reconsideration relocation msg
-            # ends interview if response to relocation question is no AFTER reconsidering, 
-            # or moves on and raises flag for hiring manager if answer changes.
-            if relocation_flag:
-                if user_input.lower().strip() in ["yes", "yeah", "correct", "that's right"]:
-                    final_msg = "Thank you for confirming. Unfortunately, we cannot proceed further since the job requires relocation/commuting."
-                    print("Interviewer:", final_msg) # remove later
-                    bot_reply = final_msg
-                    update_history("assistant", conversation_history, transcript_messages, final_msg)
-                    finalize_interview(interview, transcript_messages, talent, client)
-                    return
-                    
-
-                elif user_input.lower().strip() in ["no", "actually, i can", "i changed my mind"]:
-                    confirmation_msg = "Thanks for clarifying! Let's move on."
-                    print("Interviewer:", confirmation_msg) #remove later
-                    update_history("assistant", conversation_history, transcript_messages, confirmation_msg)
-                    bot_reply = confirmation_msg
-                    relocation_flag = False 
-                    relocation_reconsideration_flag = True #flag for HR
-         
-            try:
-                #if more than three followups, move on
-                if bot_reply and category:
-                    action, followup_suggestion = evaluate_response_action(client, category, bot_reply, user_input)
-                    if action in ["follow_up", "re_ask"] and followup_suggestion:
-                        if followup_count < 3:
-                            print("\nInterviewer (follow-up):", followup_suggestion)
-                            update_history("assistant", conversation_history, transcript_messages, followup_suggestion)
-                            bot_reply = followup_suggestion
-                            followup_count += 1
-                            continue  # Wait for user's answer to follow-up before proceeding
-                        else:
-                            # Exceeded follow-up threshold; reset counter and proceed to next question
-                            followup_count = 0
-
-                bot_response = get_bot_response(client, conversation_history=conversation_history, tools=[end_interview()])
-                #print(bot_response.content)
-
-                if bot_response.content:
-                    content = bot_response.content.strip()
-
-                    # if response contain more than 1 obj
-                    if content.count("{") > 1 and content.count("}") > 1:
-                        first_json_obj = content.split("\n")[0].strip() # get first one only
-                        parsed = json.loads(first_json_obj)
-         
+                    if bot_response.content: 
+                       bot_reply = bot_response.content
+                       print("\nInterviewer:", bot_reply)
+                       update_history("assistant", conversation_history, transcript_messages, bot_reply, category=category)
                     else: 
-                        parsed = json.loads(content)
-
-                    bot_reply = parsed["question"]
-                    category = parsed["category"]
-                    print("\nInterviewer:", bot_reply)
-                    update_history("assistant", conversation_history, transcript_messages, bot_reply, category)
-                else:
-                   print("tool called, ending the interview.")
-                   #print(bot_response)
+                       print("no response")
+                       print("tool called, ending the interview.")
 
 
-                #bot_reply = bot_response.content 
-                bot_tools = bot_response.tool_calls
-                # print("\nInterviewer:", bot_reply)
-                # update_history("assistant", conversation_history, transcript_messages, bot_reply)
+                    bot_tools = bot_response.tool_calls
 
-                # Check for function call by model
-                # End interview and print summary if found
-                if bot_tools:
-                    end = False
-                    for tool_call in bot_tools:
-                        name = tool_call.function.name
-                        args = json.loads(tool_call.function.arguments)
+                    if bot_tools:
+                        end = False
+                        for tool_call in bot_tools:
+                            name = tool_call.function.name
+                            args = json.loads(tool_call.function.arguments)
 
-                        if name == "end_interview":
-                            # In a non-terminal version, this would be saved to a database, not shown to interviewee
-                            print("\nInterviewer [For admin]:", args["summary"]) 
-                            interview_summary =  args["summary"] # store this somewhere in db later
-                            interview.summary = interview_summary 
-                            end = True
-                    if end:
-                        finalize_interview(interview, transcript_messages, talent, client)
-                        break
+                            if name == "end_interview":
+                                  print("\nInterviewer [For admin]:", args["summary"]) 
+                                  interview_summary =  args["summary"]
+                                  interview.summary = interview_summary # store in db
+                                  end = True
+                            if end:
+                                finalize_interview(interview, transcript_messages, talent, client)
+                                return
+
+                    print("You: ", end='', flush=True)
+                    user_input = get_user_input()
+                    update_history("user", conversation_history, transcript_messages, user_input)
+
+                    # append q,a to current category transcript
+                    category_q_a_pairs += f"Q: {question}\nA: {user_input}\n\n"
+
+                    if user_input.lower() == "exit": 
+                         goodbye_msg = "Goodbye! have a great day."
+                         print(goodbye_msg) # remove later
+                         update_history("assistant", conversation_history, transcript_messages, goodbye_msg)
+                         finalize_interview(interview, transcript_messages, talent, client)
+                         return
+
+                action = None   #? 
+                action, followup_suggestion = evaluate_response_action(client, category, category_q_a_pairs)
+                if action in ["follow_up", "re_ask"] and followup_suggestion:
+                            print("\nInterviewer (follow-up):", followup_suggestion)
+                            update_history("assistant", conversation_history, transcript_messages, followup_suggestion, category=category)
+
+                            print("You: ", end='', flush=True)
+                            user_input = get_user_input()
+                            update_history("user", conversation_history, transcript_messages, user_input)
+
+                            if user_input.lower() == "exit": 
+                                   goodbye_msg = "Goodbye! have a great day."
+                                   print(goodbye_msg) # remove later
+                                   update_history("assistant", conversation_history, transcript_messages, goodbye_msg)
+                                   finalize_interview(interview, transcript_messages, talent, client)
+                                   return  
 
             except Exception as e:
-                print("Error communicating with OpenAI API:", str(e))
-                print("Raw bot response:", repr(bot_response.content))
+                    print(f"Interviewer: (Error generating question): {e}")
+                    continue
+        
+        finalize_interview(interview, transcript_messages, talent, client)
+
 
 
 def finalize_interview(interview: Interview , transcript_messages:list, talent: TalentProfile, client:OpenAI) -> None :

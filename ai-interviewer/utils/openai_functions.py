@@ -19,6 +19,51 @@ def end_interview() -> dict:
         }
     }
 
+
+def stop_interview_relocation() -> dict:
+    return {
+        "type": "function",
+        "function":
+        {
+            "name": "stop_interview_relocation",
+            "description": "Ends the interview if candidate not willing to relocate and returns a summary of the interview and how strong the candidate is.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "summary": {"type": "string",}
+                },
+                "required": [
+                    "summary"
+                ],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    }
+
+
+
+def ask_relocation_confirmation() -> dict:
+    return {
+        "type": "function",
+        "function":
+        {
+            "name": "ask_relocation_confirmation",
+            "description": "if the candidate is not willing to relocate, ask if theyre sure, tell them this means they're not eligible for the position.",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "question": {"type": "string",}
+                },
+                "required": [
+                    "question"
+                ],
+                "additionalProperties": False
+            },
+            "strict": True
+        }
+    }
+
 # not using this 
 
 # def get_question_tool():

@@ -42,29 +42,29 @@ def get_bot_response(client: OpenAI, conversation_history: list, model_type: str
                 model=model_type,
                 tools=tools,
                 #tool_choice=tool_choice, # useful for multiple tools
-                response_format = {"type": "json_schema",
-                                   "json_schema": {
-                                         "name": "ask_question",
-                                         "schema": {
-                                            "type": "object",
-                                               "properties": {
-                                                    "category": {
-                                                        "type": "string",
-                                                        "description": "Category of the question. Choose ONLY ONE from: location, availability, schedule, academic_background, interest, prev_experience, teamwork, communication, preference",
-                                                        "enum" : ["location","availability","schedule","academic_background","interest","prev_experience","teamwork","communication","preference"]
-                                                    },
-                                                    "question": {
-                                                        "type": "string",
-                                                       "description": "The interview question to ask the candidate."
-                                                    }
-                                                },
-                                                "required": ["category", "question"],
-                                                "additionalProperties": False
-                                        }
-                                        ,
-                                    "strict": True
-                                     }
-                                    }
+                # response_format = {"type": "json_schema",
+                #                    "json_schema": {
+                #                          "name": "ask_question",
+                #                          "schema": {
+                #                             "type": "object",
+                #                                "properties": {
+                #                                     "category": {
+                #                                         "type": "string",
+                #                                         "description": "Category of the question. Choose ONLY ONE from: location, availability, schedule, academic_background, interest, prev_experience, teamwork, communication, preference",
+                #                                         "enum" : ["location","availability","schedule","academic_background","interest","prev_experience","teamwork","communication","preference"]
+                #                                     },
+                #                                     "question": {
+                #                                         "type": "string",
+                #                                        "description": "The interview question to ask the candidate."
+                #                                     }
+                #                                 },
+                #                                 "required": ["category", "question"],
+                #                                 "additionalProperties": False
+                #                         }
+                #                         ,
+                #                     "strict": True
+                #                      }
+                #                     }
              )
 
     return response.choices[0].message

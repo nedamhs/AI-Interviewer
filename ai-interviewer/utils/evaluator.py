@@ -1,9 +1,9 @@
 from openai import OpenAI
 import json
 
-def evaluate_response_action(client: OpenAI, category: str, question: str, answer: str) -> tuple[str, str | None]:
+def evaluate_response_action(client: OpenAI, category: str, category_qa: str) -> tuple[str, str | None]:
     """
-    Evaluates a Q&A text block and returns a classification:
+    Evaluates a Q&A text string for a category and returns a classification:
         - proceed
         - follow_up
         - re_ask
@@ -14,8 +14,8 @@ def evaluate_response_action(client: OpenAI, category: str, question: str, answe
         followup_suggestion (str or None): A follow-up question or clarification suggestion if needed
     """
 
-    qa_text = "Q: " + question + "\n"
-    qa_text += "A: " + answer + "\n\n"
+    # qa_text = "Q: " + question + "\n"
+    # qa_text += "A: " + answer + "\n\n"
 
 
     system_prompt = (
@@ -24,7 +24,7 @@ def evaluate_response_action(client: OpenAI, category: str, question: str, answe
         "Base your judgment on whether the response is complete, relevant, and addresses the interview question well."
     )
 
-    user_prompt = f"""Category: "{category}"\n\nResponses:\n{qa_text}
+    user_prompt = f"""Category: "{category}"\n\nResponses:\n{category_qa}
     
     Return a JSON object with:
     - "action": one of "proceed", "follow_up", or "re_ask"
@@ -66,6 +66,7 @@ def evaluate_response_action(client: OpenAI, category: str, question: str, answe
 
     if bot_response.content:
         parsed = json.loads(bot_response.content)
+        #print("***TESTING: PARSED action: ", parsed["action"])
         return parsed["action"], parsed["followup_suggestion"]
     else:
         return "re_ask", "Unable to evaluate due to an error."

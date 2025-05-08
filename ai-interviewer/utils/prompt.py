@@ -9,7 +9,7 @@ from profiles.models import TalentProfile
 from .distances import calculate_distance
 import random
 
-def location_prompt(min_dist : int, remote_option : bool) -> str:
+def location_prompt(min_dist : int, remote_option : bool) -> list[str]:
 
     questions = [
         "Ask Where are they currently located? If there is a specific location you find on their resume, ask if they are still located at said location. if there are multiple locations listed in their profile, ask which one is their current location",
@@ -24,81 +24,59 @@ def location_prompt(min_dist : int, remote_option : bool) -> str:
     elif min_dist < 50 and remote_option == 1:
         questions.append("the job location is within 50 miles from the candidate's current location and job is offered remotely, Ask if if they want to work remote or commute to the office? ")
 
-    return "\n".join(questions)
+    return questions
 
-def availability_prompt() -> str:
-    return """ Based on the provided resume and job description, ask the candidate:
-    Ask When they are available to start the job, and for how long?
-    Whether they are open to full-time, part-time, or internship roles.”? """.strip()
-
-def schedule_prompt() -> str:
-    return """ Ask about their preferred work schedule and if they are flexible with hours
-    Ask how do you plan to manage your time effectively, If this role is hybrid/remote """.strip()
+def availability_prompt() -> list[str]:
+    return ["Ask When they are available to start the job, and for how long?", 
+            "Ask Whether they are open to full-time, part-time, or internship roles"]
     
-def academic_background_prompt() -> str:
-    return """Using the academic information from the resume, ask:
-    Ask about about their current academic status.
-    Ask how their educational background X (listed in the provided resume) aligns with this role""".strip()
 
-def interest_prompt() -> str:
-    return """Using the job description and company details, ask:
-    Ask What attracts them to the company X (listed in job description) and How does it fit with their career goals?""".strip()
+def schedule_prompt() -> list[str]:
+    return ["Ask about their preferred work schedule and if they are flexible with hours", 
+            "Ask how do they plan to manage your time effectively, If this role is hybrid/remote"]
+    
+    
+def academic_background_prompt() -> list[str]:
+    return ["Using the academic information from the resume,  Ask about about their current academic status.", 
+            "Using the information from the resume,, Ask how their educational background X (listed in the provided resume) aligns with this role"]
 
-def prev_experience_prompt() -> str:
-    return """Based on the candidate's previous roles listed in the resume:
-              Ask about any of their previous experience at their previous Company X (listed in the provided resume).
-              Ask What skills did they gain from their past experience that will be valuable in this role?
-              How do those skills apply to the responsibilities listed in this role?""".strip()
 
-def teamwork_prompt() -> str:
-    return """Ask them about a time when you worked in a team? What was their role, and how did they contribute?
-    Ask How do they handle conflicts or disagreements within a team?""".strip()
+def interest_prompt() -> list[str]:
+    return ["Using the job description and company details, ask What attracts them to the company X (listed in job description)", 
+    " Ask What attracts them to the company X (listed in job description) and How does it fit with their career goals?"]
+    
 
-def communication_prompt() -> str:
-    return """Ask How do they typically communicate in a remote or hybrid work environment?
-    Aske about a time when they had to explain a complex idea to someone without a technical background.""".strip()
+def prev_experience_prompt() -> list[str]:
+    return ["Based on the candidate's previous roles listed in the resume: Ask about any of their previous experience at their previous Company X (listed in the provided resume).",
+    "Based on the candidate's previous roles listed in the resume:  Ask What skills did they gain from their past experience that will be valuable in this role?",
+    "Based on the candidate's previous roles listed in the resume: Ask How do those skills apply to the responsibilities listed in this role?" ]
 
-def preference_prompt() -> str:
-    return """ Ask if they prefer working on multiple smaller tasks at once, or focusing on one large task at a time?
-    Ask What type of work environment helps them stay productive and engaged?""".strip()
 
-def randomize_prompts() -> list[str]:
-    """
-    Randomizes the order of a list of predefined prompt functions.
+def teamwork_prompt() -> list[str]:
+    return ["Ask them about a time when you worked in a team? What was their role, and how did they contribute?",
+            "Ask How do they handle conflicts or disagreements within a team?"]
 
-    This function calls various prompt-generating functions and shuffles their order 
-    before returning them in a randomized list. 
 
-    Returns:
-        list: A shuffled list of prompts.
-    """
-    # prompt_list = [
-    # availability_prompt(),
-    # schedule_prompt(), 
-    # academic_background_prompt(),
-    # interest_prompt(), 
-    # prev_experience_prompt(), 
-    # teamwork_prompt(), 
-    # communication_prompt(), 
-    # preference_prompt()]
+def communication_prompt() -> list[str]:
+    return ["Ask How do they typically communicate in a remote or hybrid work environment?",
+            "Aske about a time when they had to explain a complex idea to someone without a technical background."]
+    
 
-    must_ask_list = [
-    availability_prompt(),
-    schedule_prompt(), 
-    prev_experience_prompt(),
-    interest_prompt(), 
-    ]
+def preference_prompt() -> list[str]:
+    return ["Ask if they prefer working on multiple smaller tasks at once, or focusing on one large task at a time?", 
+            "Ask What type of work environment helps them stay productive and engaged?" ]
 
-    optional = [
-    academic_background_prompt(),
-    teamwork_prompt(), 
-    communication_prompt(), 
-    preference_prompt()]
 
-    random.shuffle(must_ask_list)
-    random.shuffle(optional)
-    must_ask_list.extend(optional)
-    return must_ask_list
+PROMPT_DICT = {#"location"            : location_prompt(), 
+               "availability"        : availability_prompt(), 
+               "schedule"            : schedule_prompt(),  
+               "academic_background" : academic_background_prompt(),
+               "interest"            : interest_prompt(),
+               "experience"          : prev_experience_prompt(), 
+               "teamwork"            : teamwork_prompt(), 
+               "communication"       : communication_prompt(), 
+               "preference"          : preference_prompt()}
+
 
 def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     ''' 
@@ -119,24 +97,17 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     job_location_names = ", ".join([loc.display_name for loc in job_locations])
     talent_location_names = ", ".join([loc.display_name for loc in talent_locations])
 
-    distances = calculate_distance(job_locations, talent_locations)
-    print("distances : ", distances) #testing! remove later
-    if distances: 
-        min_dist = min(distances, key=lambda x: x[2])[2] #sort by dist, get min
-
     file_string =  f"""You are a professional AI interviewer, designed to conduct a screening interview.
     Greet the candidate warmly and introduce yourself as the AI interviewer.
     Briefly explain the structure of the interview: this will focus on your background, availability, and fit for the job.
     Mention that no deep technical questions will be asked at this stage. It's primarily a logistical and cultural fit conversation.
-    Absolutely never ask more than one question at a time. After asking a question, wait for the candidate's response before proceeding.
+    Absolutely never ask more than one question at a time.
     Take the information from their resume to tailor/personalize the questions for the candidate.
     Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant.
     Make sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below.
     Change the wording in the following questions to sound natural and adjust tone and language to give a more conversational experience.
     If the candidate does not fully answer the question, do not proceed. Politely rephrase and ask again until they provide a complete response. Do not move forward until the current question is fully answered.
-    Do not proceed to the next question until you have confirmed that the previous question has been fully answered. If the candidate’s response is incomplete, ask a follow-up question until they fully address the topic.
-
-
+    Do not proceed to the next question until you have confirmed that the previous question has been fully answered.
 
     --- Job Information ---
     **Job Title:** {job.title}
@@ -149,20 +120,15 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     **Candidate location:** {talent_location_names}
     **Candidate Resume Summary:**{talent.resume.clean_text}
     """
-    file_string += """ALWAYS START WITH LOCATION QUESTIONS"""
-    file_string += location_prompt(min_dist, job.remote_option )  
-    file_string += f"\n\n".join(randomize_prompts())     # other prompts in random order
     file_string += """Closing the Interview:
     Summarize key points discussed in the interview, particularly around availability and interest in the role.
     Thank them for their time and inform them about the next steps in the process (e.g., scheduling follow-up 
     interviews or informing them about the selection process). 
     Call the end_interview function.
     
-    Ask similar questions one by one. Don't explain answers just keep it brief."""
+    Ask ONE QUESTION AT TIME. Don't explain answers just keep it brief."""
 
     file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
-    
-    file_string += '\nOnly return ONE JSON object per response. Do not return multiple JSONs or wrap them in arrays. Just a single object like: {\"category\": \"interest\", \"question\": \"...\"}'
 
     file_string += "\nONLY CALL THE END_INTERVIEW TOOL IF MOST OF THE KEY CATEGORIES ARE ASKED"
 
