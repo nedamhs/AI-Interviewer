@@ -51,7 +51,7 @@ class Meeting:
                 "join_before_host": True,
                 "mute_upon_entry": True,
                 "waiting_room": False,
-                "password" : "balls",
+                "password" : "pairwise",
                 "audio": "both", # 'voip', 'telephony', 'both'
                 "auto_recording": "none", # 'local', 'cloud', 'none',
                 "meeting_authentication": False # makes sure that only authenticated users can join the meeting
