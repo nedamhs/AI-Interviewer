@@ -13,6 +13,7 @@ import time
 from zoom_auth import get_zak
 from audio_utils.text_to_speech import text_to_audio
 import asyncio
+import queue
 
 gi.require_version('GLib', '2.0')
 
@@ -117,7 +118,8 @@ class MeetingBot:
         self.audio_raw_data_sender = None
         self.virtual_audio_mic_event_passthrough = None
 
-        self.deepgram_transcriber = DeepgramTranscriber()
+        self.transcript_queue = queue.Queue()
+        self.deepgram_transcriber = DeepgramTranscriber(self.transcript_queue)
 
         self.my_participant_id = None
         self.other_participant_id = None
