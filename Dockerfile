@@ -47,15 +47,12 @@ RUN apt-get update && apt-get install -y linux-libc-dev
 RUN apt-get update && apt-get install -y universal-ctags
 
 # Copy requirements.txt first (for cache)
-COPY /interviewer-bot/requirements.txt .
+COPY requirements.txt .
 
 # Install python dependencies through requirements
 RUN pip install --no-cache-dir -r requirements.txt
 
 RUN ln -s /usr/bin/python3 /usr/bin/python
-
-COPY /interviewer-bot .
-COPY /audio_utils/ /app/audio_utils
 
 # CMD ["python", "launch.py"]
 
