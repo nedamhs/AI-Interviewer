@@ -1,12 +1,38 @@
-# requirements for the docker container
+# requirements for the docker container + chatbot
 
+asgiref==3.7.2
+attrs==23.2.0
 Cython==3.0.12
+deepgram-sdk==4.0.0
+Django==5.0.3
+django-browser-reload==1.13.0
+djangorestframework==3.15.1
+django-money==3.5.2
+django-phonenumber-field==8.0.0
+drf-spectacular==0.27.2
+drf-spectacular-sidecar==2024.12.1
+faster-whisper==1.1.1
+inflection==0.5.1
+jsonschema==4.23.0
+jsonschema-specifications==2023.12.1
 numpy==2.2.5
+openai==1.61.1
 opencv-python==4.11.0.86
+phonenumbers==8.13.51
+pillow==11.2.1
 PyJWT==2.10.1
 python-dotenv==1.1.0
+pyvirtualcam==0.12.1
+PyYAML==6.0.1
+referencing==0.35.1
 requests==2.32.3
+rpds-py==0.19.0
+setuptools==68.2.2
+sounddevice==0.5.1
+sqlparse==0.4.4
+tzdata==2024.1
+uritemplate==4.1.1
+wheel==0.41.2
 zoom-meeting-sdk==0.0.20
-deepgram-sdk==4.0.0
 openai==1.61.1
 scipy==1.15.3

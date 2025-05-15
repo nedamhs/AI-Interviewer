@@ -45,15 +45,12 @@ def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:
     
     update_history("assistant", conversation_history, transcript_messages,bot_reply)
     print("Interviewer: ", bot_reply)
-    asyncio.run(text_to_audio(bot_reply))
+    # asyncio.run(text_to_audio(bot_reply)) # uncomment to enable audio w/ drivers
 
-    # start interview starting transcriber and interview model
-    transcriber = Transcriber()
+    # start interview starting interview model
     try:
-        transcriber.transcribe_start()
-        conduct_interview(talent, job, transcript_messages, conversation_history, client, transcriber)
+        conduct_interview(talent, job, transcript_messages, conversation_history, client)
     except KeyboardInterrupt:
-        transcriber.transcribe_stop()
         print("\nStopped transcriber and interview.")
 
 

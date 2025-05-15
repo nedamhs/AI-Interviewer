@@ -192,6 +192,16 @@ class MeetingBot:
 
     def on_user_join_callback(self, joined_user_ids, user_name):
         print("on_user_join_callback called. joined_user_ids =", joined_user_ids, "user_name =", user_name)
+        
+        # Send a welcome message to the chat
+        builder = self.chat_ctrl.GetChatMessageBuilder()
+        builder.SetContent("Welcome to the meeting! Just send \'ready\' when you are ready to begin.")
+        builder.SetReceiver(0)
+        builder.SetMessageType(zoom.SDKChatMessageType.To_All)
+        msg = builder.Build()
+        send_result = self.chat_ctrl.SendChatMsgTo(msg)
+        print("send_result =", send_result)
+        builder.Clear()
 
     def on_sharing_status_callback(self, sharing_status):
         print("on_sharing_status_callback called. sharing_status =", sharing_status, "user_id =", sharing_status.userid)
@@ -214,6 +224,25 @@ class MeetingBot:
         print(f"Is Thread: {chat_msg_info.IsThread()}")
         print(f"Thread ID: {chat_msg_info.GetThreadID()}")    
         print("=====================\n")
+
+        if (chat_msg_info.GetContent().lower() == "ready"):
+            # Send reply to start interview
+            builder = self.chat_ctrl.GetChatMessageBuilder()
+            builder.SetContent("Great! Let's get started.")
+            builder.SetReceiver(0)
+            builder.SetMessageType(zoom.SDKChatMessageType.To_All)
+            msg = builder.Build()
+            send_result = self.chat_ctrl.SendChatMsgTo(msg)
+            print("send_result =", send_result)
+            builder.Clear()
+            # Start the interview
+            import subprocess
+            chatbot_script_path = "../chatbot.py"
+            try:
+                print("Starting chatbot.py...")
+                chatbot_process = subprocess.Popen(["python", chatbot_script_path])
+            except Exception as e:
+                print(f"Failed to start chatbot.py: {e}")
 
     def on_join(self):
         self.meeting_reminder_event = zoom.MeetingReminderEventCallbacks(onReminderNotifyCallback=self.on_reminder_notify)
@@ -268,16 +297,6 @@ class MeetingBot:
         self.chat_ctrl = self.meeting_service.GetMeetingChatController()
         self.chat_ctrl_event = zoom.MeetingChatEventCallbacks(onChatMsgNotificationCallback=self.on_chat_msg_notification_callback)
         self.chat_ctrl.SetEvent(self.chat_ctrl_event)
-
-        # Send a welcome message to the chat
-        builder = self.chat_ctrl.GetChatMessageBuilder()
-        builder.SetContent("Welcoome to the PyZoomMeetingSDK")
-        builder.SetReceiver(0)
-        builder.SetMessageType(zoom.SDKChatMessageType.To_All)
-        msg = builder.Build()
-        send_result = self.chat_ctrl.SendChatMsgTo(msg)
-        print("send_result =", send_result)
-        builder.Clear()
 
     def on_user_active_audio_change_callback(self, user_ids):
         print("on_user_active_audio_change_callback called. user_ids =", user_ids)

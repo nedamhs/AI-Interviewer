@@ -1,10 +1,10 @@
-import sounddevice as sd
+# import sounddevice as sd # commented to run chatbot in container
 import numpy as np
 import queue
 import threading
 from faster_whisper import WhisperModel
 import datetime
-import webrtcvad
+# import webrtcvad # commented to run chatbot in container
 
 # ----- PRE-REQUISITES -----:
 # NEED TO INSTALL BLACKHOLE AUDIO DRIVER OR OS COMPATIBLE VIRTUAL AUDIO DEVICE

@@ -9,7 +9,6 @@ from .bot import get_bot_response
 from .inputs import get_user_input,update_history
 from audio_utils.text_to_speech import text_to_audio
 from audio_utils.audio_transcriber import Transcriber
-from audio_utils.texttospeech import text_to_audio
 from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
@@ -25,7 +24,7 @@ import asyncio
 _LOOP = asyncio.new_event_loop()
 asyncio.set_event_loop(_LOOP)
 
-def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI, transcriber:Transcriber) -> None:
+def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
         '''
         Main structured function for conducting the screening interview
 
@@ -70,8 +69,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 break
             
             print("You: ", end='', flush=True)
-            # user_input = get_user_input()
-            user_input = transcriber.transcript_queue.get() # popped from audio queue of audio transcriber
+            user_input = get_user_input() # manual input until deepgram is set up
             print(f"{user_input}\n")
             if user_input.lower() == "exit": # remove later
                 write_to_transcript(talent.user.id, talent.user.first_name, messages=transcript_messages)
@@ -143,7 +141,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
 
 def interviewerSpeak(bot_reply: str)-> None:
     print("Interviewer:" , bot_reply)
-    _LOOP.run_until_complete(text_to_audio(bot_reply))
+    # _LOOP.run_until_complete(text_to_audio(bot_reply)) # uncomment to enable audio w/ drivers
 
 
 def process_location_update(user_input: str, job_locations: list) -> tuple[str, float]:

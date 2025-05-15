@@ -57,4 +57,6 @@ RUN ln -s /usr/bin/python3 /usr/bin/python
 COPY /interviewer-bot .
 COPY /audio_utils/ /app/audio_utils
 
-CMD ["python", "launch.py"]
+# CMD ["python", "launch.py"]
+
+CMD ["/bin/bash"]
