@@ -15,7 +15,16 @@ RATE = 24000
 BLOCK_SIZE = 512
 
 def resample_pcm_24k_to_32k(pcm_bytes: bytes) -> bytes:
-    audio_24k = np.frombuffer(pcm_bytes, dtype='<i2')  # little-endian 16-bit PCM
+    '''
+      Takes in 24k pcm and resamples to 32k to be playable in zoom
+
+      Inputs:
+        pcm_bytes: bytes
+          pcm bytes from the async api client
+      Returns: 
+        None
+    '''
+    audio_24k = np.frombuffer(pcm_bytes, dtype='<i2')  
 
     audio_32k = resample_poly(audio_24k, up=4, down=3)
 
@@ -30,6 +39,8 @@ async def text_to_audio(text: str,callback: callable) -> None:
       Inputs:
         text: str 
             text to serve as the input to the bot.
+        callback: callable 
+            function used to play the audio to
       Returns: 
         None
   '''
@@ -45,11 +56,13 @@ async def text_to_audio(text: str,callback: callable) -> None:
 
 async def play_stream(audio_bytes:AsyncStreamedBinaryAPIResponse, callback:callable) -> None:
     '''
-      Takes the audio, sets a device and streams the audio to the specific divice 
+      Takes the audio, reads it out, resamples the data and sends it to the callback function
 
       Inputs:
         audio_bytes 
             async api bytes of audio 
+        callback: callable 
+            function used to play the audio to
       Returns: 
         None
     '''
