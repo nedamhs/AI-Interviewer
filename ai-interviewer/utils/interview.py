@@ -7,6 +7,10 @@ from .openai_functions import end_interview
 from .transcript import write_to_transcript
 from .bot import get_bot_response
 from .inputs import get_user_input,update_history
+from profiles.models import TalentProfile
+from jobs.models import Job
+from locations.models import Location
+from .distances import calculate_distance
 # from audio_utils.text_to_speech import text_to_audio
 # from audio_utils.audio_transcriber import Transcriber
 from openai import OpenAI
@@ -14,17 +18,12 @@ from dotenv import load_dotenv
 load_dotenv()
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 django.setup()
-from profiles.models import TalentProfile
-from jobs.models import Job
-from locations.models import Location
-from .distances import calculate_distance
-import asyncio
 
 #one loop as default
 _LOOP = asyncio.new_event_loop()
 asyncio.set_event_loop(_LOOP)
 
-def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
+def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI, meeting_bot) -> None:
         '''
         Main structured function for conducting the screening interview
 
@@ -39,7 +38,9 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 The conversation history the bot will be using
             client : OpenAI
                 The way to API call the bot
-                    
+            meeting_bot: MeetingBot
+                Meeting bot that is running zoom meeting
+        
         Returns:
             None
         '''
@@ -67,8 +68,13 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 break
             
             print("You: ", end='', flush=True)
-            user_input = get_user_input() # manual input until deepgram is set up
-            print(f"{user_input}\n")
+            while True:
+                if not meeting_bot.transcript_queue.empty():
+                    user_input = meeting_bot.transcript_queue.get()
+                    print(f"{user_input} from transcriber queue\n")
+                    break
+                else:
+                    time.sleep(0.1)
             if user_input.lower() == "exit": # remove later
                 write_to_transcript(talent.user.id, talent.user.first_name, messages=transcript_messages)
                 print("Goodbye!")
@@ -86,7 +92,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             if bot_reply and ("open to relocating" in bot_reply.lower().strip() or "willing to commute" in bot_reply.lower().strip()) and min_dist > 50:
                     if user_input.lower().strip() in ["no", "i can't", "not willing to relocate", "nope", "not sure"]:
                         reconsideration_msg = "Are you sure? This may mean you are not eligible for this position."
-                        interviewerSpeak(reconsideration_msg)
+                        interviewerSpeak(reconsideration_msg, meeting_bot)
                         update_history("assistant", conversation_history, transcript_messages, reconsideration_msg)
                         bot_reply = reconsideration_msg
                         relocation_flag = True
@@ -96,14 +102,14 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             if relocation_flag:
                 if user_input.lower().strip() in ["yes", "yeah", "correct", "that's right"]:
                     final_msg = "Thank you for confirming. Unfortunately, we cannot proceed further since the job requires relocation/commuting."
-                    interviewerSpeak(final_msg)
+                    interviewerSpeak(final_msg, meeting_bot)
                     bot_reply = final_msg
                     update_history("assistant", conversation_history, transcript_messages, final_msg)
                     write_to_transcript(talent.user.id, talent.user.first_name, messages=transcript_messages)
                     return
                 elif user_input.lower().strip() in ["no", "actually, i can", "i changed my mind"]:
                     confirmation_msg = "Thanks for clarifying! Let's move on."
-                    interviewerSpeak(confirmation_msg)
+                    interviewerSpeak(confirmation_msg, meeting_bot)
                     update_history("assistant", conversation_history, transcript_messages, confirmation_msg)
                     bot_reply = confirmation_msg
                     print(bot_reply.lower())
@@ -115,7 +121,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 bot_reply = bot_response.content
                 bot_tools = bot_response.tool_calls
                 
-                interviewerSpeak(bot_reply)
+                interviewerSpeak(bot_reply, meeting_bot)
 
                 update_history("assistant", conversation_history, transcript_messages, bot_reply)
 
@@ -137,8 +143,9 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
             except Exception as e:
                 print("Error communicating with OpenAI API:", str(e))
 
-def interviewerSpeak(bot_reply: str)-> None:
+def interviewerSpeak(bot_reply: str, meeting_bot)-> None:
     print("Interviewer:" , bot_reply)
+    meeting_bot.tts(bot_reply)
     # _LOOP.run_until_complete(text_to_audio(bot_reply)) # uncomment to enable audio w/ drivers
 
 

@@ -2,6 +2,10 @@ import os
 import cv2
 import gi
 import jwt
+import sys
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
+import chatbot
 
 from gi.repository import GLib
 from deepgram_transcriber import DeepgramTranscriber
@@ -236,13 +240,7 @@ class MeetingBot:
             print("send_result =", send_result)
             builder.Clear()
             # Start the interview
-            import subprocess
-            chatbot_script_path = "../chatbot.py"
-            try:
-                print("Starting chatbot.py...")
-                chatbot_process = subprocess.Popen(["python", chatbot_script_path])
-            except Exception as e:
-                print(f"Failed to start chatbot.py: {e}")
+            chatbot.conduct_random_interview(self)
 
     def on_join(self):
         self.meeting_reminder_event = zoom.MeetingReminderEventCallbacks(onReminderNotifyCallback=self.on_reminder_notify)
@@ -314,8 +312,8 @@ class MeetingBot:
 
     def on_mic_start_send_callback(self):
         print("on_mic_start_send_callback called")
-        time.sleep(20)
-        self.tts("this is an extremely long test to ensure that this is a proper working function and that I am allowed to write extremely long things into this without it breaking on me due to zoom logic.")
+        # time.sleep(20)
+        # self.tts("this is an extremely long test to ensure that this is a proper working function and that I am allowed to write extremely long things into this without it breaking on me due to zoom logic.")
 
     def tts(self, text):
         '''TTS '''

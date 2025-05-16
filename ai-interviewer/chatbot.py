@@ -4,11 +4,8 @@ from utils.inputs import update_history
 from utils.bot import get_client, get_bot_response
 from utils.interview import conduct_interview
 from utils.openai_functions import end_interview
-# from audio_utils.audio_transcriber import Transcriber
 import os
 import django
-# from audio_utils.text_to_speech import text_to_audio
-import asyncio
 load_dotenv()
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
@@ -18,7 +15,7 @@ from jobs.models import Job
 from profiles.models import TalentProfile
 
 
-def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:  
+def conduct_ai_interview(job: Job, talent: TalentProfile, meeting_bot) -> None:  
     '''
     Main function which conducts the screening interview via the terminal.
 
@@ -27,6 +24,8 @@ def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:
             Conducts an screening interview based on the job
         talent: TalentProfile
             Accounts for aspects on the talent's profile
+        meeting_bot: MeetingBot
+            Meeting bot that is running zoom meeting
             
     Returns: 
         None
@@ -45,26 +44,28 @@ def conduct_ai_interview(job: Job, talent: TalentProfile) -> None:
     
     update_history("assistant", conversation_history, transcript_messages,bot_reply)
     print("Interviewer: ", bot_reply)
-    # asyncio.run(text_to_audio(bot_reply)) # uncomment to enable audio w/ drivers
+    meeting_bot.tts(bot_reply)
 
     # start interview starting interview model
     try:
-        conduct_interview(talent, job, transcript_messages, conversation_history, client)
+        conduct_interview(talent, job, transcript_messages, conversation_history, client, meeting_bot)
     except KeyboardInterrupt:
         print("\nStopped transcriber and interview.")
 
+def conduct_random_interview(meeting_bot) -> None:
+    '''
+    Conducts a random interview with a random job and talent.
 
-# ran as a script
-if __name__ == "__main__":
-    # function for conducting a interview with a random job and talent
-    # function only if ran from command line
-    def conduct_random_interview():
-        # fetch random job and talent from database
-        rand_job = Job.objects.order_by('?').first()
-        rand_talent = TalentProfile.objects.order_by('?').first()
+    Inputs:
+        meeting_bot: MeetingBot
+            Meeting bot that is running zoom meeting
+    Returns:
+        None
+    '''
+    # fetch random job and talent from database
+    rand_job = Job.objects.order_by('?').first()
+    rand_talent = TalentProfile.objects.order_by('?').first()
 
-        print("Conducting a random interview for the position " + rand_job.title + ". The candidate's name is " + rand_talent.user.first_name + " " + rand_talent.user.last_name + ".")
+    print("Conducting a random interview for the position " + rand_job.title + ". The candidate's name is " + rand_talent.user.first_name + " " + rand_talent.user.last_name + ".")
 
-        conduct_ai_interview(rand_job, rand_talent)
-
-    conduct_random_interview()
+    conduct_ai_interview(rand_job, rand_talent, meeting_bot)
