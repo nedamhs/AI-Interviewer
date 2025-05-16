@@ -18,6 +18,7 @@ class Meeting:
         self.join_url = None
         self.password = None
         self.encrypted_password = None
+        self.token = get_access_token()
 
     def create_zoom_meeting(self) -> dict:
         """
@@ -26,15 +27,13 @@ class Meeting:
         API Reference: https://developers.zoom.us/docs/api/rest/reference/zoom-api/methods/#operation/meetingCreate
         
         """
-        
-        token = get_access_token()
-        
-        if not token:
+                
+        if not self.token:
             print("Cannot create meeting without an access token.")
             return None
 
         headers = {
-            'Authorization': f'Bearer {token}',
+            'Authorization': f'Bearer {self.token}',
             'Content-Type': 'application/json'
         }
 
@@ -96,15 +95,51 @@ class Meeting:
     def end_zoom_meeting(self):
         """
         Ends zoom meeting
-
+        https://developers.zoom.us/docs/api/meetings/#tag/meetings/PUT/meetings/{meetingId}/status
         """
-        pass
+        
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
 
+        try:
+            response = requests.put(f"https://api.zoom.us/v2/meetings/{self.meeting_id}/status", headers=headers, timeout=15)
+            response.raise_for_status() # Raise HTTPError for bad responses
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error getting ending meeting: {e}")
+            if response is not None:
+                print(f"Response status code: {response.status_code}")
+                print(f"Response text: {response.text}")
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred during ending meeting: {e}")
+            return None
+        
     def delete_zoom_meeting(self):
         """
         Deletes zoom meeting
         
         """
+        headers = {
+            'Authorization': f'Bearer {self.token}',
+            'Content-Type': 'application/json'
+        }
+
+        try:
+            response = requests.delete(f"https://api.zoom.us/v2/meetings/{self.meeting_id}", headers=headers, timeout=15)
+            response.raise_for_status() # Raise HTTPError for bad responses
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error getting deleting meeting: {e}")
+            if response is not None:
+                print(f"Response status code: {response.status_code}")
+                print(f"Response text: {response.text}")
+            return None
+        except Exception as e:
+            print(f"An unexpected error occurred during deleting meeting: {e}")
+            return None
         pass
 
     # def launch_meeting(self, meeting_info) -> None:
