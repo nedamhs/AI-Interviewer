@@ -7,8 +7,8 @@ from .openai_functions import end_interview
 from .transcript import write_to_transcript
 from .bot import get_bot_response
 from .inputs import get_user_input,update_history
-from audio_utils.text_to_speech import text_to_audio
-from audio_utils.audio_transcriber import Transcriber
+# from audio_utils.text_to_speech import text_to_audio
+# from audio_utils.audio_transcriber import Transcriber
 from openai import OpenAI
 from dotenv import load_dotenv
 load_dotenv()
@@ -39,9 +39,7 @@ def conduct_interview(talent: TalentProfile, job: Job,  transcript_messages:list
                 The conversation history the bot will be using
             client : OpenAI
                 The way to API call the bot
-            trasncriber : Transcriber
-                Transcriber class to get text from speech and pass into user input
-        
+                    
         Returns:
             None
         '''

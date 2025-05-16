@@ -4,10 +4,10 @@ from utils.inputs import update_history
 from utils.bot import get_client, get_bot_response
 from utils.interview import conduct_interview
 from utils.openai_functions import end_interview
-from audio_utils.audio_transcriber import Transcriber
+# from audio_utils.audio_transcriber import Transcriber
 import os
 import django
-from audio_utils.text_to_speech import text_to_audio
+# from audio_utils.text_to_speech import text_to_audio
 import asyncio
 load_dotenv()
 
