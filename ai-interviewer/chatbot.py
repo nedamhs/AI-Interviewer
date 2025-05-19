@@ -46,7 +46,7 @@ def start_ai_interview(job: Job, talent: TalentProfile) -> None:
     
     job_locations = job.locations.all()  # get all job locations
     talent_locations = talent.locations.all() # get all talent location
-    curr_location = talent_locations[0].display_name if talent_locations else "Unknown" # get curr location in case of location update
+    #curr_location = talent_locations[0].display_name if talent_locations else "Unknown" # get curr location in case of location update
     #print("TEST, CURR_LOCATION:", curr_location)
 
     distances = calculate_distance(job_locations, talent_locations)
@@ -59,13 +59,8 @@ def start_ai_interview(job: Job, talent: TalentProfile) -> None:
     interviewobj = Interview.objects.create(candidate=talent, job=job,
                                              start = timezone.now(),  # start time
                                              status=InterviewStatusChoices.SCHEDULED)
-
-
-    relocation_flag = False
-    relocation_reconsideration_flag = False
      
     # asking location questions: 
-
     category = "location"
     for question in location_prompt(min_dist, job.remote_option): 
 
@@ -87,7 +82,7 @@ def start_ai_interview(job: Job, talent: TalentProfile) -> None:
 
 
   
-    # after asking location questions, decide to stop or proceed
+    # after asking location questions, confirm the relocation decison if they are not willing to relocate 
     instruction =  f"""if candidate responds no to the relocation question, call the ask_relocation_confirmation() tool to confirm their relocation decision"""
 
     conversation_history.append({"role": "user", "content": instruction})
@@ -95,30 +90,36 @@ def start_ai_interview(job: Job, talent: TalentProfile) -> None:
 
     bot_tools = bot_response.tool_calls
 
+    # if ask_relocation_confirmation() tool called 
     if bot_tools:
                 for tool_call in bot_tools:
                             name = tool_call.function.name
                             args = json.loads(tool_call.function.arguments)
 
                             if name == "ask_relocation_confirmation":
-                                    confirmation_question =  args["question"]
+                                    confirmation_question =  args["question"] # question generated from tool call
                                     print("\nInterviewer:", confirmation_question)
                                     update_history("assistant", conversation_history, transcript_messages, confirmation_question, category=category)
 
-
+                                    # get confirmation response
                                     print("You: ", end='', flush=True)
                                     user_input = get_user_input()
                                     update_history("user", conversation_history, transcript_messages, user_input)
 
-                                    instruction =  f"""if candidate confirmed they are not willing to relocate, Immediately call the ' stop_interview_relocation' tool to end the interview."""
-
+                                    # after asking confirmation quesion, decide to stop or not 
+                                    instruction =  f"""if candidate confirmed they are not willing to relocate, Immediately call the ' stop_interview_relocation' tool to end the interview.""" 
+                                     
+                                    # ADD this TO INSTRUCTION : if changed mind, thank them. 
                                     conversation_history.append({"role": "user", "content": instruction})
                                     bot_response = get_bot_response(client, conversation_history, tools=[stop_interview_relocation()])
 
+                                    # if changed mind, tool not called 
                                     if bot_response.content: 
                                          bot_reply = bot_response.content
                                          print("\nInterviewer:", bot_reply)
                                          update_history("assistant", conversation_history, transcript_messages, bot_reply, category=category)
+
+                                    # if 'stop_interview_relocation' tool called
                                     else: 
                                          ending_msg = "unfortunately we cannot proceed further. have a great day."
                                          print("\nInterviewer:", ending_msg) 
@@ -134,7 +135,6 @@ def start_ai_interview(job: Job, talent: TalentProfile) -> None:
                                             args = json.loads(tool_call.function.arguments)
 
                                             if name == "stop_interview_relocation":
-                                           # In a non-terminal version, this would be saved to a database, not shown to interviewee
                                                  print("\nInterviewer [For admin]:", args["summary"]) 
                                                  interview_summary =  args["summary"]
                                                  interviewobj.summary = interview_summary # store in db
@@ -144,6 +144,7 @@ def start_ai_interview(job: Job, talent: TalentProfile) -> None:
                                                return
 
                                     else: 
+                                        # go to main interview function when user change minds on relocation.
                                         conduct_interview(interviewobj, talent, job, transcript_messages, conversation_history, client)
  
     else: 
