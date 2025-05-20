@@ -5,7 +5,8 @@ import jwt
 import sys
 parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.append(parent_dir)
-import chatbot
+from utils.interview_session import InterviewSession
+from test_interview import get_random_job
 
 from gi.repository import GLib
 from deepgram_transcriber import DeepgramTranscriber
@@ -147,6 +148,9 @@ class MeetingBot:
         self.chat_ctrl_event = None
         #event loop for async call
         self._LOOP = None
+        #DEBUG FLAG MEANT TO TEST DUMMY INTERVIEWS 
+        self._DEBUG = True
+        self.shutdown = False
     def cleanup(self):
         if self.meeting_service:
             zoom.DestroyMeetingService(self.meeting_service)
@@ -240,7 +244,25 @@ class MeetingBot:
             print("send_result =", send_result)
             builder.Clear()
             # Start the interview
-            chatbot.conduct_random_interview(self)
+            interview = None
+            if self._DEBUG:
+                rand_job, rand_talent = get_random_job()
+                interview = InterviewSession(rand_job, rand_talent, self.tts)
+            else:
+                #somehow get actual candidate info 
+                pass
+            interview.start()
+            try:
+                while not interview.phase == "ENDED" or not self.shutdown:
+                    print("Looping")
+                    if not self.transcript_queue.qsize() == 0:
+                        print("inside")
+                        i = self.transcript_queue.get()
+                        interview.send_response(i)
+            except KeyboardInterrupt:
+                print("shutting down")
+
+
 
     def on_join(self):
         self.meeting_reminder_event = zoom.MeetingReminderEventCallbacks(onReminderNotifyCallback=self.on_reminder_notify)

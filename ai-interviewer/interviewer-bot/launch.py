@@ -50,6 +50,7 @@ class ZoomBotRunner:
     def on_signal(self, signum, frame):
         """Signal handler for SIGINT and SIGTERM"""
         print(f"\nReceived signal {signum}")
+        self.bot.shutdown = True
         # Schedule the exit process to run soon, but not immediately
         if self.main_loop:
             GLib.timeout_add(100, self.exit_process)
