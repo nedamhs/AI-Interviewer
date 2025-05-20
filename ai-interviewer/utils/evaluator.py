@@ -30,37 +30,36 @@ def evaluate_response_action(client: OpenAI, category: str, category_qa: str) ->
     - "action": one of "proceed", "follow_up", or "re_ask"
     - "followup_suggestion": a short follow-up question (only if action is 'follow_up' or 're_ask') or null otherwise.
     """
-
-
-
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt},
         ],
-        response_format={"type": "json_schema",
-                         "json_schema": {
-                             "name": "evaluate_action",
-                             "schema": {
-                                 "type": "object",
-                                 "properties": {
-                                     "action": {
-                                         "type": "string",
-                                         "enum": ["proceed", "follow_up", "re_ask"],
-                                         "description": "Classification of whether to move forward with the interview."
-                                     },
-                                     "followup_suggestion": {
-                                         "type": ["string", "null"],
-                                         "description": "A follow-up question or clarification prompt if needed."
-                                     }
-                                 },
-                                 "required": ["action", "followup_suggestion"],
-                                 "additionalProperties": False
-                             }
-                         }
-                         }
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "evaluate_action",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "action": {
+                            "type": "string",
+                            "enum": ["proceed", "follow_up", "re_ask"],
+                            "description": "Classification of whether to move forward with the interview.",
+                        },
+                        "followup_suggestion": {
+                            "type": ["string", "null"],
+                            "description": "A follow-up question or clarification prompt if needed.",
+                        },
+                    },
+                    "required": ["action", "followup_suggestion"],
+                    "additionalProperties": False,
+                },
+            },
+        },
     )
+
 
     bot_response = response.choices[0].message
 

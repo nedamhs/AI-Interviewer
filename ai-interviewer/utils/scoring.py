@@ -102,31 +102,29 @@ def get_score(client:OpenAI , category: str , qa_text: str)  -> tuple[float | No
 
     response = client.chat.completions.create(
         model="gpt-4o",
-        messages=[{"role": "system", "content": system_prompt},
-                  {"role": "user", "content": user_prompt}],
-        response_format = {"type": "json_schema",
-                                   "json_schema": {
-                                         "name": "score_interview",
-                                         "schema": {
-                                            "type": "object",
-                                               "properties": {
-                                                    "score": {
-                                                        "type": "number",
-                                                        "description": "Score from 1 to 10 evaluating the candidate's responses in the given category"
-                                                    },
-                                                    "reason": {
-                                                        "type": "string",
-                                                       "description": "reason"
-                                                    }
-                                                },
-                                                "required": ["score", "reason"],
-                                                "additionalProperties": False
-                                        }
-                                        ,
-                                    "strict": True
-                                     }
-                                    }
-
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt},
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "score_interview",
+                "schema": {
+                    "type": "object",
+                    "properties": {
+                        "score": {
+                            "type": "number",
+                            "description": "Score from 1 to 10 evaluating thecandidate's responses in the given category",
+                        },
+                        "reason": {"type": "string", "description": "reason"},
+                    },
+                    "required": ["score", "reason"],
+                    "additionalProperties": False,
+                },
+                "strict": True,
+            },
+        },
     )
 
     bot_response = response.choices[0].message
