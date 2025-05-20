@@ -252,15 +252,12 @@ class MeetingBot:
                 #somehow get actual candidate info 
                 pass
             interview.start()
-            try:
-                while not interview.phase == "ENDED" or not self.shutdown:
-                    print("Looping")
-                    if not self.transcript_queue.qsize() == 0:
-                        print("inside")
-                        i = self.transcript_queue.get()
-                        interview.send_response(i)
-            except KeyboardInterrupt:
-                print("shutting down")
+            
+            while not interview.phase == "ENDED" or not self.shutdown:
+                if not self.transcript_queue.qsize() == 0:
+                    i = self.transcript_queue.get()
+                    interview.send_response(i)
+
 
 
 
