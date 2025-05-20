@@ -20,6 +20,7 @@ from interviews.models import Interview, InterviewStatusChoices
 from .scoring import score_interview
 from .evaluator import  evaluate_response_action
 from .prompt import *
+from .HR_report import generate_report_components
 
 
 def conduct_interview(interview: Interview, talent: TalentProfile, job: Job,  transcript_messages:list, conversation_history:list, client:OpenAI) -> None:
@@ -171,4 +172,6 @@ def finalize_interview(interview: Interview , transcript_messages:list, talent: 
 
     score_interview(interview, client=client)
     print("TESTING: Scoring complete.")
+
+    generate_report_components(interview, client=client)
 
