@@ -1,4 +1,5 @@
 import math 
+from locations.models import Location
 
 def calculate_distance(job_locations: list, talent_locations: list) -> list[tuple[str, str, int]]:
     """
@@ -69,3 +70,49 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
 
     # round to nearest int
     return round(distance) 
+
+
+
+def process_location_update(user_input: str, job_locations: list) -> tuple[str, float]:
+    """
+    Processes user's location response update during interview
+
+    Inputs:
+        user_input (str): location provided by user
+        job_locations (list): list of job location objects
+
+    Returns:
+        tuple:
+            - (str) Updated location or "Invalid" if ignored
+            - (float) Updated min distance or set to float("inf") if unknown
+    """
+
+    user_input = user_input.strip().lower()
+
+    # ignore invalid location responses
+    INVALID_RESPONSES = {"no", "not sure", "maybe", "i don't know", "n/a"}
+
+    if user_input in INVALID_RESPONSES:
+        return "Invalid", None 
+
+    matching_location = Location.objects.filter(label__iexact=user_input).first()
+    
+    if matching_location and matching_location.details:
+        updated_lat = matching_location.details.latitude
+        updated_lon = matching_location.details.longitude
+        print(f"found existing location in database: {matching_location.display_name} ({updated_lat}, {updated_lon})") # remove later
+    
+        updated_distances = calculate_distance(job_locations, [matching_location])
+        print("TESTING: UPDATED DISTANCE= ", updated_distances)
+
+        if updated_distances: 
+            min_dist = min(updated_distances, key=lambda x: x[2])[2]  
+            print(f"updated min_dist to {min_dist}") # remove later
+        else:
+            min_dist = float("inf")
+
+        return matching_location.display_name, min_dist
+
+    else:
+        print(f"{user_input} not found in database, defaulting to unknown location")
+        return "Unknown", float("inf")

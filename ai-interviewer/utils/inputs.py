@@ -47,7 +47,7 @@ def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ) -> str:
     print("\nUser did not respond in time, thank you for your time.", end= ' ')
     return "exit"
 
-def update_history(role:str, conversation_history: list, transcript: list, input: str) -> None:
+def update_history(role:str, conversation_history: list, transcript: list, input: str, category: str = None) -> None:
     """
     Update the conversation history and the transcript by adding input into it 
 
@@ -60,9 +60,20 @@ def update_history(role:str, conversation_history: list, transcript: list, input
             The total transcript which will be updated
         input : str 
             The inputted message
+        category : str 
+            The category of the question 
     
     Returns: 
         None
     """
     conversation_history.append({"role": role, "content": input})
-    transcript.append({"role": role,"content": input,"time": time.strftime("%H:%M:%S", time.localtime())})
+
+    message = {"role": role, "content": input, "time": time.strftime("%H:%M:%S", time.localtime())}
+
+    if category:
+        message["category"] = category
+
+    transcript.append(message)
+
+
+    
