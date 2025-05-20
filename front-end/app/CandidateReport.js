@@ -69,6 +69,7 @@ const CandidateReport = () => {
     const [finalScore, setFinalScore] = useState(null);
     const [candidateName, setCandidateName] = useState('');
     const [jobTitle, setJobTitle] = useState('');
+    const [report, setReport] = useState(null);
 
 
 
@@ -79,6 +80,10 @@ const CandidateReport = () => {
                            setCandidateName(res.data.candidate_name);
                            setJobTitle(res.data.job_title);})
             .catch(err => console.error('Error fetching interview details:', err));
+
+        axios.get(`/api/interviews/${interviewId}/report/`)
+            .then(res => setReport(res.data))
+            .catch(err => console.error('Error fetching interview report:', err));
     
         axios.get(`/api/scores/${interviewId}`)
             .then(res => setScores(res.data))
@@ -95,7 +100,7 @@ const CandidateReport = () => {
             <img 
                 src="/static/logo.png" 
                 alt="Company Logo" 
-                style={{ width: '300px', margin: '20px 0 20px 20px', float: 'left' }}
+                style={{ width: '300px', margin: '20px 0 20px 20px', float: 'left' }} /* double check this */
             />
     
             <div style={pageStyle}>
@@ -112,6 +117,37 @@ const CandidateReport = () => {
             <div style={cardStyle}>
                 <p style={reasonStyle}><strong>Summary:</strong> {summary || 'No summary available.'}</p>
             </div>
+
+            {report && ( <>
+                            <div style={cardStyle}>
+                                <h3>📄 Resume Summary</h3>
+                                <p>{report.resume_summary}</p>
+                            </div>
+
+                            <div style={cardStyle}>
+                                <h3>🗣️ Interview Summary</h3>
+                                <p>{report.interview_summary}</p>
+                            </div>
+
+                            <div style={cardStyle}>
+                                <h3>{report.recommendation === "recommended" ? "✅ Recommended" : "❌ Not Recommended"}</h3>
+                                <p><strong>Reason:</strong> {report.reason}</p>
+                            </div>
+
+                            <div style={cardStyle}>
+                                <h3>🔍 Key Insights</h3>
+                                <ul>
+                                    {report.key_insights.map((insight, idx) => (
+                                        <li key={idx}>
+                                            <strong>{insight.label === "good" ? "✅" : "❌"} </strong>
+                                            {insight.text}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </>
+                    )}
+
 
                 {scores.map((item, idx) => (
                     <div style={cardStyle} key={idx}>

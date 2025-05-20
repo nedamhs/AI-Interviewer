@@ -22,5 +22,6 @@ urlpatterns += [
     path('api/transcripts/', transcript_views.get_all_transcripts, name='get_all_transcripts'),
     path('api/scores/<int:interview_id>/', transcript_views.get_interview_scores, name='get_interview_scores'),
     path('api/interview/<int:interview_id>/details/', interview_views.get_interview_details, name='get_interview_details'),
+    path("api/interviews/<int:interview_id>/report/", interview_views.get_interview_report, name= 'get_interview_report'),
 ]
 
