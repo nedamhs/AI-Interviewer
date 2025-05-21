@@ -1,5 +1,9 @@
+import signal
 import gi
 import os
+import django
+import sys
+import time
 
 from dotenv import load_dotenv
 from gi.repository import GLib
@@ -30,6 +34,8 @@ class ZoomBotRunner:
         self.shutdown_requested = True
         
         try:
+
+
             if self.bot:
                 print("Leaving meeting...")
                 self.bot.leave()
@@ -110,3 +116,18 @@ class ZoomBotRunner:
             print(f"Error in main loop: {e}")
         finally:
             self.exit_process()
+
+def main():
+    load_dotenv()
+        
+    runner = ZoomBotRunner()
+
+    # Set up signal handlers
+    signal.signal(signal.SIGINT, runner.on_signal)
+    signal.signal(signal.SIGTERM, runner.on_signal)
+    
+    # Run the Meeting Bot
+    runner.run()
+
+if __name__ == "__main__":
+    main()
