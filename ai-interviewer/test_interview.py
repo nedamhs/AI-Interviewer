@@ -10,7 +10,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "settings")
 django.setup()
 
 from interviewer_bot.utils.interview_session import InterviewSession
-from interviewer_bot.launch import ZoomBotRunner
+from interviewer_bot.zoombotrunner import ZoomBotRunner
 
 from profiles.models import TalentProfile
 from jobs.models import Job
