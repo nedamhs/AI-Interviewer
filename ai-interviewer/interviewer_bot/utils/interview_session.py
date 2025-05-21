@@ -83,7 +83,10 @@ class InterviewSession:
         """
         try:
             self.curr_question = next(self.location_question_iterator)
-            instruction = f"""You are an ai interviewer, ask the following interview question in a friendly and personalized way. Take the information from their resume to tailor/personalize the questions for the candidate. Question: {self.curr_question}"""
+            instruction = f"""You are an ai interviewer, ask the following interview question in a friendly and personalized way. 
+            Take the information from their resume to tailor/personalize the questions for the candidate.
+            DO NOT ABBREVIATE THE STATE NAME. PRINT THE COMPLETE STATE NAME. 
+            Question: {self.curr_question}"""
 
             self.conversation_history.append({"role": "user", "content": instruction})
             bot_response = get_bot_response(
