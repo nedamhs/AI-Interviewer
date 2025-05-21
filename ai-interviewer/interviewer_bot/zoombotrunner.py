@@ -1,6 +1,6 @@
 import gi
 import os
-
+import time
 from dotenv import load_dotenv
 from gi.repository import GLib
 
@@ -19,6 +19,7 @@ class ZoomBotRunner:
         self.meeting = None
         self.main_loop = None
         self.shutdown_requested = False
+        self.timeout = 600
 
     def exit_process(self):
         """Clean shutdown of the bot and main loop"""
@@ -72,6 +73,14 @@ class ZoomBotRunner:
             return False
         return True
 
+    def timer(self):
+        alone = self.bot.alone
+        start = self.bot.start_time
+        if alone != None and start != None:
+            if alone and time.time() - start >= self.timeout:
+                self.exit_process()
+        return True 
+    
     def run(self):
         """Main run method"""
         self.meeting = Meeting()
@@ -102,6 +111,7 @@ class ZoomBotRunner:
 
         # Add a timeout function that will be called every 100ms
         GLib.timeout_add(100, self.on_timeout)
+        GLib.timeout_add_seconds(1, self.timer)
 
         try:
             print("Starting main event loop")

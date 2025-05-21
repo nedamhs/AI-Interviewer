@@ -5,7 +5,7 @@ import jwt
 import sys
 import asyncio
 import queue
-
+import time 
 import zoom_meeting_sdk as zoom
 from datetime import datetime, timedelta
 import numpy as np
@@ -151,6 +151,10 @@ class MeetingBot:
         #DEBUG FLAG MEANT TO TEST DUMMY INTERVIEWS 
         self._DEBUG = True
         self.shutdown = False
+        self.alone = True
+        self.start_time = None 
+        #timeout after ending 
+       
     def cleanup(self):
         if self.meeting_service:
             zoom.DestroyMeetingService(self.meeting_service)
@@ -200,7 +204,7 @@ class MeetingBot:
 
     def on_user_join_callback(self, joined_user_ids, user_name):
         print("on_user_join_callback called. joined_user_ids =", joined_user_ids, "user_name =", user_name)
-        
+        self.alone = False
         # Send a welcome message to the chat
         builder = self.chat_ctrl.GetChatMessageBuilder()
         builder.SetContent("Welcome to the meeting! Just send \'ready\' when you are ready to begin.")
@@ -248,6 +252,13 @@ class MeetingBot:
             self.interview.start()
 
 
+    def on_user_leave_callback(self,joined_user_ids, user_name):
+        print(f"{user_name} has left")
+        self.alone = True
+        self.start_time = time.time()
+        
+
+    
 
 
     def on_join(self):
@@ -271,7 +282,7 @@ class MeetingBot:
             GLib.timeout_add_seconds(1, self.start_raw_recording)
 
         self.participants_ctrl = self.meeting_service.GetMeetingParticipantsController()
-        self.participants_ctrl_event = zoom.MeetingParticipantsCtrlEventCallbacks(onUserJoinCallback=self.on_user_join_callback)
+        self.participants_ctrl_event = zoom.MeetingParticipantsCtrlEventCallbacks(onUserJoinCallback=self.on_user_join_callback, onUserLeftCallback=self.on_user_leave_callback)
         self.participants_ctrl.SetEvent(self.participants_ctrl_event)
         self.my_participant_id = self.participants_ctrl.GetMySelfUser().GetUserID()
 
@@ -303,6 +314,7 @@ class MeetingBot:
         self.chat_ctrl = self.meeting_service.GetMeetingChatController()
         self.chat_ctrl_event = zoom.MeetingChatEventCallbacks(onChatMsgNotificationCallback=self.on_chat_msg_notification_callback)
         self.chat_ctrl.SetEvent(self.chat_ctrl_event)
+
 
     def on_user_active_audio_change_callback(self, user_ids):
         print("on_user_active_audio_change_callback called. user_ids =", user_ids)
@@ -477,6 +489,8 @@ class MeetingBot:
 
         self.audio_settings = self.setting_service.GetAudioSettings()
         self.audio_settings.EnableAutoJoinAudio(True)
+        self.start_time = time.time()
+        
 
     def on_reminder_notify(self, content, handler):
         if handler:
