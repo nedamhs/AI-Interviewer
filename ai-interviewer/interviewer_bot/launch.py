@@ -1,17 +1,23 @@
 import signal
 import gi
 import os
+import django
+import sys
 
 from dotenv import load_dotenv
 from gi.repository import GLib
 
-from meetingbot import MeetingBot
-from meeting import Meeting
+from .meetingbot import MeetingBot
+from .meeting import Meeting
+from .utils.interview_session import InterviewSession
 
 gi.require_version('GLib', '2.0')
 
 class ZoomBotRunner:
-    def __init__(self):
+    def __init__(self, interview : InterviewSession):
+
+        self.interview = interview
+
         self.bot = None
         self.meeting = None
         self.main_loop = None
@@ -27,6 +33,8 @@ class ZoomBotRunner:
         self.shutdown_requested = True
         
         try:
+
+
             if self.bot:
                 print("Leaving meeting...")
                 self.bot.leave()
@@ -34,7 +42,13 @@ class ZoomBotRunner:
                 self.bot.cleanup()
             
                 self.force_exit()
-             
+
+            print("self.meeting: ", str(self.meeting is not None))
+            if self.meeting:
+                print("deleting meeting")
+                self.meeting.end_zoom_meeting()
+                self.meeting.delete_zoom_meeting()
+                
         except Exception as e:
             print(f"Error during cleanup: {e}")
             self.force_exit()
@@ -80,7 +94,7 @@ class ZoomBotRunner:
         
         print("Meeting created! Link: ", self.meeting.join_url)
         
-        self.bot = MeetingBot(self.meeting.meeting_id, self.meeting.encrypted_password)
+        self.bot = MeetingBot(self.meeting.meeting_id, self.meeting.encrypted_password, self.interview)
         
         try:
             self.bot.init()
@@ -106,9 +120,9 @@ class ZoomBotRunner:
 
 def main():
     load_dotenv()
-    
+        
     runner = ZoomBotRunner()
-    
+
     # Set up signal handlers
     signal.signal(signal.SIGINT, runner.on_signal)
     signal.signal(signal.SIGTERM, runner.on_signal)

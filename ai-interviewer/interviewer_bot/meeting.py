@@ -3,7 +3,7 @@ import json
 
 from dotenv import load_dotenv
 
-from zoom_auth import get_access_token
+from .zoom_auth import get_access_token
 
 # load .env file 
 load_dotenv()

@@ -3,22 +3,20 @@ import cv2
 import gi
 import jwt
 import sys
-parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(parent_dir)
-from utils.interview_session import InterviewSession
-from test_interview import get_random_job
-
-from gi.repository import GLib
-from deepgram_transcriber import DeepgramTranscriber
-from datetime import datetime, timedelta
-import numpy as np
-
-import zoom_meeting_sdk as zoom
-import time
-from zoom_auth import get_zak
-from audio_utils.text_to_speech import text_to_audio
 import asyncio
 import queue
+
+import zoom_meeting_sdk as zoom
+from datetime import datetime, timedelta
+import numpy as np
+from gi.repository import GLib
+
+
+from .deepgram_transcriber import DeepgramTranscriber
+from .utils.interview_session import InterviewSession
+from .zoom_auth import get_zak
+from .audio_utils.text_to_speech import text_to_audio
+
 
 gi.require_version('GLib', '2.0')
 
@@ -94,8 +92,10 @@ def create_red_yuv420_frame(width=640, height=360):
     return yuv_frame.tobytes()
 
 class MeetingBot:
-    def __init__(self, meeting_id, meeting_pwd):
+    def __init__(self, meeting_id : str, meeting_pwd : str, interview : InterviewSession):
         
+        self.interview = interview
+
         self.meeting_id = meeting_id
         self.meeting_pwd = meeting_pwd
         
@@ -124,7 +124,7 @@ class MeetingBot:
         self.virtual_audio_mic_event_passthrough = None
 
         self.transcript_queue = queue.Queue()
-        self.deepgram_transcriber = DeepgramTranscriber(self.transcript_queue)
+        self.deepgram_transcriber = DeepgramTranscriber(self.interview.send_response)
 
         self.my_participant_id = None
         self.other_participant_id = None
@@ -244,19 +244,8 @@ class MeetingBot:
             print("send_result =", send_result)
             builder.Clear()
             # Start the interview
-            interview = None
-            if self._DEBUG:
-                rand_job, rand_talent = get_random_job()
-                interview = InterviewSession(rand_job, rand_talent, self.tts)
-            else:
-                #somehow get actual candidate info 
-                pass
-            interview.start()
-            
-            while not interview.phase == "ENDED" or not self.shutdown:
-                if not self.transcript_queue.qsize() == 0:
-                    i = self.transcript_queue.get()
-                    interview.send_response(i)
+            self.interview.response_callback = self.tts
+            self.interview.start()
 
 
 

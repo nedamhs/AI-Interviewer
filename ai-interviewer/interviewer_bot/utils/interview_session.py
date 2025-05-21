@@ -5,8 +5,8 @@ import json
 # LLM util
 from .prompt import *
 from .bot import get_client, get_bot_response
-from utils.distances import calculate_distance
-from utils.openai_functions import end_interview, stop_interview_relocation, ask_relocation_confirmation
+from .distances import calculate_distance
+from .openai_functions import end_interview, stop_interview_relocation, ask_relocation_confirmation
 from .evaluator import evaluate_response_action
 from .transcript import write_to_transcript, write_transcript_to_db
 from .scoring import score_interview

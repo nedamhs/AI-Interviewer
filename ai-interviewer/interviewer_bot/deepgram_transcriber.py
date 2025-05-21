@@ -13,9 +13,9 @@ from functools import partial
 import asyncio
 
 class DeepgramTranscriber:
-    def __init__(self, transcript_queue=None):
+    def __init__(self, message_callback):
         config = DeepgramClientOptions(options={"keepalive": "true"})
-        self.transcript_queue = transcript_queue
+        self.message_callback = message_callback
         self.deepgram = DeepgramClient(os.environ.get('DEEPGRAM_API_KEY'), config)
         self.dg_connection = self.deepgram.listen.websocket.v("1") 
 
@@ -48,17 +48,17 @@ class DeepgramTranscriber:
 
     def _on_message(self, client, result, **kwargs):
         transcript = result.channel.alternatives[0].transcript
-
+        print(transcript)
+        print(result)
         if getattr(result, "is_final", False):
             cleaned = self.trim_tail(" ".join(self.current_sentence), transcript)
             self.current_sentence.append(cleaned)
 
-            if getattr(result, "speech_final", False):
-                full_utterance = " ".join(self.current_sentence).strip()
-                print(f"🟢Final Transcription🟢: {full_utterance}")
-                self.current_sentence.clear()
-                if self.transcript_queue:
-                    self.transcript_queue.put(full_utterance)
+            # if getattr(result, "speech_final", False):
+            full_utterance = " ".join(self.current_sentence).strip()
+            print(f"🟢Final Transcription🟢: {full_utterance}")
+            self.current_sentence.clear()
+            self.message_callback(full_utterance)
 
     def _on_error(self, client, error, **kwargs):
         print(f"Error: {error}")
