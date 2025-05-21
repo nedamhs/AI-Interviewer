@@ -3,6 +3,7 @@ import gi
 import os
 import django
 import sys
+import time
 
 from dotenv import load_dotenv
 from gi.repository import GLib
@@ -41,14 +42,12 @@ class ZoomBotRunner:
                 print("Cleaning up bot...")
                 self.bot.cleanup()
             
-                self.force_exit()
-
-            print("self.meeting: ", str(self.meeting is not None))
             if self.meeting:
-                print("deleting meeting")
                 self.meeting.end_zoom_meeting()
-                self.meeting.delete_zoom_meeting()
-                
+                # self.meeting.delete_zoom_meeting() # instant meetings are deleted once ended
+            
+            self.force_exit()
+
         except Exception as e:
             print(f"Error during cleanup: {e}")
             self.force_exit()

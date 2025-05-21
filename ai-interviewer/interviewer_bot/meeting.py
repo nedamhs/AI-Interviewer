@@ -103,8 +103,12 @@ class Meeting:
             'Content-Type': 'application/json'
         }
 
+        payload = {
+            "action" : "end"
+        }
+
         try:
-            response = requests.put(f"https://api.zoom.us/v2/meetings/{self.meeting_id}/status", headers=headers, timeout=15)
+            response = requests.put(f"https://api.zoom.us/v2/meetings/{self.meeting_id}/status", headers=headers, json=payload, timeout=15)
             response.raise_for_status() # Raise HTTPError for bad responses
 
         except requests.exceptions.RequestException as e:
@@ -120,7 +124,7 @@ class Meeting:
     def delete_zoom_meeting(self):
         """
         Deletes zoom meeting
-        
+        https://developers.zoom.us/docs/api/meetings/#tag/meetings/DELETE/meetings/{meetingId}
         """
         headers = {
             'Authorization': f'Bearer {self.token}',
