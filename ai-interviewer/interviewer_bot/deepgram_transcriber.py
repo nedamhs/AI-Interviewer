@@ -24,6 +24,7 @@ class DeepgramTranscriber:
         # Hook up the event handlers
         self.dg_connection.on(LiveTranscriptionEvents.Transcript, partial(self._on_message))
         self.dg_connection.on(LiveTranscriptionEvents.Error, partial(self._on_error))
+        self.dg_connection.on(LiveTranscriptionEvents.UtteranceEnd, self._on_UtteranceEnd)
 
         options = LiveOptions(
             model="nova-3",
@@ -32,10 +33,13 @@ class DeepgramTranscriber:
             language='en-GB',
             encoding="linear16",
             sample_rate=32000,
-            endpointing=1500
+            endpointing=1500,
+            utterance_end_ms="1500",
+            vad_events=True
         )
 
         self.dg_connection.start(options)
+        self.speech_final_received = False
 
     def trim_tail(self, prev: str, curr: str) -> str:
         prev_words = prev.split()
@@ -48,17 +52,30 @@ class DeepgramTranscriber:
 
     def _on_message(self, client, result, **kwargs):
         transcript = result.channel.alternatives[0].transcript
-        print(transcript)
-        print(result)
         if getattr(result, "is_final", False):
             cleaned = self.trim_tail(" ".join(self.current_sentence), transcript)
             self.current_sentence.append(cleaned)
 
-            # if getattr(result, "speech_final", False):
+            if getattr(result, "speech_final", False):
+                full_utterance = " ".join(self.current_sentence).strip()
+                if not full_utterance:
+                    return
+                print(f"🟢Final Transcription🟢: {full_utterance}")
+                self.current_sentence.clear()
+                self.speech_final_received = True
+                self.message_callback(full_utterance)
+            else:
+                self.speech_final_received = False
+
+    def _on_UtteranceEnd(self, result, **kwargs):
+        if not self.speech_final_received:
             full_utterance = " ".join(self.current_sentence).strip()
-            print(f"🟢Final Transcription🟢: {full_utterance}")
-            self.current_sentence.clear()
+            if not full_utterance:
+                return
+            print(f"🔵Final Transcription (Triggered by UtteranceEnd)🔵: {full_utterance}")
             self.message_callback(full_utterance)
+            self.current_sentence.clear()
+        self.speech_final_received = True
 
     def _on_error(self, client, error, **kwargs):
         print(f"Error: {error}")
