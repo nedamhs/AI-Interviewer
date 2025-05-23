@@ -22,7 +22,7 @@ def resample_pcm_24k_to_32k(pcm_bytes: bytes) -> bytes:
       pcm_bytes: bytes
         pcm bytes from the async api client
     Returns: 
-      None
+      32k pcm byte stream
   '''
   audio_24k = np.frombuffer(pcm_bytes, dtype='<i2')  
 
@@ -53,7 +53,6 @@ async def text_to_audio(text: str,callback: callable) -> None:
   ) as response:
     await asyncio.sleep(1) # Note: this is needed to buffer some audio to ensure a non static response
     await play_stream(response, callback)
-    print("done")
 
 async def play_stream(audio_bytes:AsyncStreamedBinaryAPIResponse, callback:callable) -> None:
   '''
