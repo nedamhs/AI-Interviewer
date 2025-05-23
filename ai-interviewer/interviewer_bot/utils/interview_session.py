@@ -10,6 +10,7 @@ from .openai_functions import end_interview, stop_interview_relocation, ask_relo
 from .evaluator import evaluate_response_action
 from .transcript import write_to_transcript, write_transcript_to_db
 from .scoring import score_interview
+from .HR_report import generate_report_components
 
 # Django apps and utils
 from interviews.models import Interview, InterviewStatusChoices
@@ -257,6 +258,8 @@ class InterviewSession:
         write_transcript_to_db(self.interview_object, self.transcript_messages)
 
         score_interview(self.interview_object, client=self.client)
+
+        generate_report_components(self.interview_object, client=self.client)
         
         
     def update_history(self, role : str, input: str, category: str = None) -> None:
