@@ -1,6 +1,6 @@
 import requests
 
-CALENDLY_TOKEN = "TOKEN_HERE"
+CALENDLY_TOKEN = "CALENDLY_API_TOKEN_HERE"
 
 def extract_zoom_link(location):
     """Handles both dict and string-based location fields"""
@@ -16,7 +16,7 @@ def get_all_zoom_links():
 
     headers = { "Authorization": f"Bearer {CALENDLY_TOKEN}"}
 
-    # Get your Calendly user URI
+    # Calendly user URI
     user_resp = requests.get("https://api.calendly.com/users/me", headers=headers)
     if user_resp.status_code != 200:
         print("Failed to get user info:", user_resp.text)
@@ -55,9 +55,20 @@ def get_all_zoom_links():
     return zoom_links
 
 
+def get_earliest_zoom_link():
+    """Returns the earliest scheduled Zoom meeting link only"""
+    links = get_all_zoom_links()
+    if not links:
+        return None
+
+    # Sort by start_time ascending (earliest first)
+    links.sort(key=lambda x: x["start_time"])
+    return links[0]["zoom_link"]
+
 
 if __name__ == "__main__":
 
+    # get all links
     links = get_all_zoom_links()
     if links:
         for entry in links:
@@ -65,3 +76,15 @@ if __name__ == "__main__":
             #print(f"\n{entry['start_time']} — {entry['zoom_link']}\n")
     else:
         print("No Zoom links found.")
+
+    
+    # only get the soonest zoom link
+    link = get_earliest_zoom_link()
+    if link:
+        print("\nZoom Link:", link)
+    else:
+        print("\nNo Zoom links found.")
+    
+    
+
+

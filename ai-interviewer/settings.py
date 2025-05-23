@@ -157,3 +157,13 @@ SPECTACULAR_SETTINGS = {
 }
 
 OPENAI_API_KEY = os.getenv("OPENAI-API-KEY")
+
+
+# for sending calendly invitation email. 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'PUT_SENDER_GMAIL_HERE'                # my gmail
+EMAIL_HOST_PASSWORD = 'GOOGLE_APP_PASSWORD_HERE'  # get it from https://myaccount.google.com/apppasswords.  
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
