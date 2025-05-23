@@ -153,6 +153,7 @@ class MeetingBot:
         self.shutdown = False
         self.alone = True
         self.start_time = None 
+        self.disable_STT = False
         #timeout after ending 
        
     def cleanup(self):
@@ -318,6 +319,7 @@ class MeetingBot:
 
     def on_user_active_audio_change_callback(self, user_ids):
         print("on_user_active_audio_change_callback called. user_ids =", user_ids)
+            
 
     def on_user_audio_status_change_callback(self, user_audio_statuses, otherstuff):
         print("on_user_audio_status_change_callback called. user_audio_statuses =", user_audio_statuses, "otherstuff =", otherstuff)
@@ -337,7 +339,9 @@ class MeetingBot:
 
     def tts(self, text):
         '''TTS '''
+        self.disable_STT = True
         self._LOOP.run_until_complete(text_to_audio(text, self.send_to_zoom))
+        self.disable_STT = False
 
     def send_to_zoom(self, data: bytes, rate: int):
         self.audio_raw_data_sender.send(data, rate, zoom.ZoomSDKAudioChannel_Mono)
@@ -350,8 +354,7 @@ class MeetingBot:
                 print("To get transcript add DEEPGRAM_API_KEY to the .env file")
             self.audio_print_counter += 1
             return
-
-        if node_id != self.my_participant_id:
+        if node_id != self.my_participant_id and not self.disable_STT:
             self.write_to_deepgram(data) 
        
     def write_to_deepgram(self, data):

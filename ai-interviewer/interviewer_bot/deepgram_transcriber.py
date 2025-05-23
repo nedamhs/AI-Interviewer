@@ -10,7 +10,6 @@ from deepgram import (
 )
 from functools import partial
 
-import asyncio
 
 class DeepgramTranscriber:
     def __init__(self, message_callback):
