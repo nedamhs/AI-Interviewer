@@ -91,6 +91,29 @@ def create_red_yuv420_frame(width=640, height=360):
     # Return as bytes
     return yuv_frame.tobytes()
 
+def createFrame(width, height, volume):
+
+    frame = np.zeros((height, width, 3), dtype=np.uint8)
+    
+    text = f"Volume: {volume:.2f}"
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    font_scale = min(width, height) / 500
+    thickness = 2
+    color = (255, 255, 255)
+
+    text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
+    text_width, text_height = text_size
+
+    text_x = (width - text_width) // 2
+    text_y = (height + text_height) // 2
+
+    cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness, lineType=cv2.LINE_AA)
+
+    
+    yuv = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
+    
+    return yuv.tobytes()
+
 class MeetingBot:
     def __init__(self, meeting_id : str, meeting_pwd : str, interview : InterviewSession):
         
@@ -257,10 +280,6 @@ class MeetingBot:
         print(f"{user_name} has left")
         self.alone = True
         self.start_time = time.time()
-        
-
-    
-
 
     def on_join(self):
         self.meeting_reminder_event = zoom.MeetingReminderEventCallbacks(onReminderNotifyCallback=self.on_reminder_notify)
@@ -356,7 +375,13 @@ class MeetingBot:
             return
         if node_id != self.my_participant_id and not self.disable_STT:
             self.write_to_deepgram(data) 
-       
+            
+        if node_id == self.my_participant_id and self.video_sender:
+            volume = normalized_rms_audio(data.GetBuffer())
+            
+            yuv = createFrame(1920, 1080, volume)
+            self.video_sender.sendVideoFrame(yuv, 1920, 1080, 0, zoom.FrameDataFormat_I420_FULL)
+  
     def write_to_deepgram(self, data):
         try:
             buffer_bytes = data.GetBuffer()
@@ -413,9 +438,11 @@ class MeetingBot:
         self.renderer_delegate = zoom.ZoomSDKRendererDelegateCallbacks(onRawDataFrameReceivedCallback=self.on_raw_data_frame_received_callback)
         self.video_helper = zoom.createRenderer(self.renderer_delegate)
 
-        self.video_helper.setRawDataResolution(zoom.ZoomSDKResolution_720P)
-        subscribe_result = self.video_helper.subscribe(self.other_participant_id, zoom.ZoomSDKRawDataType.RAW_DATA_TYPE_VIDEO)
-        print("video_helper subscribe_result =", subscribe_result)
+        # self.video_helper.setRawDataResolution(zoom.ZoomSDKResolution_720P)
+        # subscribe_result = self.video_helper.subscribe(self.other_participant_id, zoom.ZoomSDKRawDataType.RAW_DATA_TYPE_VIDEO)
+        # print("video_helper subscribe_result =", subscribe_result)
+
+
 
         self.virtual_camera_video_source = zoom.ZoomSDKVideoSourceCallbacks(onInitializeCallback=self.on_virtual_camera_initialize_callback, onStartSendCallback=self.on_virtual_camera_start_send_callback)
         self.video_source_helper = zoom.GetRawdataVideoSourceHelper()
@@ -436,8 +463,9 @@ class MeetingBot:
     def on_virtual_camera_start_send_callback(self):
         print("on_virtual_camera_start_send_callback called")
         if self.video_sender:
-            red_frame = create_red_yuv420_frame(640, 360)
-            self.video_sender.sendVideoFrame(red_frame, 640, 360, 0, zoom.FrameDataFormat_I420_FULL)
+            print("Video sender on")
+            # red_frame = create_red_yuv420_frame(640, 360)
+            # self.video_sender.sendVideoFrame(red_frame, 640, 360, 0, zoom.FrameDataFormat_I420_FULL)
 
     def on_virtual_camera_initialize_callback(self, video_sender, support_cap_list, suggest_cap):
         print("on_virtual_camera_initialize_callback called")
