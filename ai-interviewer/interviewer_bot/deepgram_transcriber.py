@@ -32,8 +32,8 @@ class DeepgramTranscriber:
             language='en-GB',
             encoding="linear16",
             sample_rate=32000,
-            endpointing=1500,
-            utterance_end_ms="1500",
+            endpointing=2750,
+            utterance_end_ms="1700",
             vad_events=True
         )
 
