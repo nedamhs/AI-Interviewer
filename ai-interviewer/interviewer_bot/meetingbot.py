@@ -92,23 +92,39 @@ def create_red_yuv420_frame(width=640, height=360):
     return yuv_frame.tobytes()
 
 def createFrame(width, height, volume):
-
-    frame = np.zeros((height, width, 3), dtype=np.uint8)
+    frame = np.zeros((height, width, 3), dtype=np.uint8) # black background
+    center_x = width // 2
+    center_y = height // 2
     
-    text = f"Volume: {volume:.2f}"
-    font = cv2.FONT_HERSHEY_SIMPLEX
-    font_scale = min(width, height) / 500
-    thickness = 2
-    color = (255, 255, 255)
-
-    text_size, _ = cv2.getTextSize(text, font, font_scale, thickness)
-    text_width, text_height = text_size
-
-    text_x = (width - text_width) // 2
-    text_y = (height + text_height) // 2
-
-    cv2.putText(frame, text, (text_x, text_y), font, font_scale, color, thickness, lineType=cv2.LINE_AA)
-
+    # Base radius and maximum radius for the orb
+    base_radius = min(width, height) // 20 
+    max_radius = min(width, height) // 6  
+    
+    normalized_volume = max(0.0, min(1.0, volume))  # ensure volume is never neg
+    current_radius = int(base_radius + (max_radius - base_radius) * normalized_volume) # calc radius based on volume [0,1.0]
+    
+    # pairwise colors
+    blue = 225
+    green = 95  
+    red = 97
+    
+    cv2.circle(frame, (center_x, center_y), current_radius, (blue, green, red), -1)
+    
+    # Add a glow effect with circles
+    if normalized_volume > 0.1:  # only add glow if there's significant volume
+        glow_value = normalized_volume * 0.5  # Glow intensity based on volume
+        
+        for i in range(3):
+            glow_radius = current_radius + (i + 1) * 10
+            if glow_radius < min(width, height) // 2:
+                glow_intensity = int(50 * glow_value * (1.0 - i * 0.3))
+                cv2.circle(frame, (center_x, center_y), glow_radius, 
+                          (blue//4, green//4, red//4), 2, lineType=cv2.LINE_AA)
+    
+    # center circle
+    highlight_radius = max(1, current_radius // 4)
+    cv2.circle(frame, (center_x - current_radius//4, center_y - current_radius//4), 
+              highlight_radius, (255, 255, 255), -1, lineType=cv2.LINE_AA)
     
     yuv = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
     
