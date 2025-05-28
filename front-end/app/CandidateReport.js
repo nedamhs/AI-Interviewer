@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import { jsPDF } from "jspdf";
+
 
 /* each card */ 
 const cardStyle = {
@@ -9,7 +11,7 @@ const cardStyle = {
     boxShadow: '0 4px 24px rgba(77, 7, 239, 0.1)',
     padding: '16px',
     marginBottom: '20px',
-    maxWidth: '800px',
+    maxWidth: '900px',
 };
 
 /* top banner */
@@ -27,21 +29,66 @@ const bannerHeader = {
 
 /* pairwise logo */ 
 const bannerLogo = {
-    width: '120px',                
+    width: '200px',                
     height: 'auto',
     marginRight: '16px',
 };
 
 
-const scoreStyle = {
-    fontWeight: 'bold',
-    color: '#007BFF',
+const candidateHeaderContainer = {
+  display: 'flex',
+  justifyContent: 'space-between',
+  gap: '30px',
+  alignItems: 'center',
+  marginTop: '30px',
+  maxWidth: '1500',
 };
 
-const reasonStyle = {
-    fontStyle: 'italic',
-    marginBottom: '10px',
+const profilePicStyle = {
+  width: '80px',
+  height: '80px',
+  borderRadius: '50%',
+  backgroundColor: '#6266f1',
+  color: 'white',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  fontSize: '24px',
+  fontWeight: 'bold',
+  textTransform: 'uppercase',
 };
+
+const candidateInfoContainer = {
+  flex: 1,
+  minWidth: '500px',
+};
+
+const buttonGroupStyle = {
+  display: 'flex',
+  gap: '10px',
+};
+
+const downloadButtonStyle = {
+  backgroundColor: 'white',
+  color: '#6266f1',
+  border: '2px solid #6266f1',
+  padding: '8px 16px',
+  borderRadius: '6px',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+};
+
+const scheduleButtonStyle = {
+  backgroundColor: '#6266f1',
+  color: 'white',
+  border: 'none',
+  padding: '8px 16px',
+  borderRadius: '6px',
+  fontWeight: 'bold',
+  cursor: 'pointer',
+};
+
+
 
 const transcriptStyle = {
     marginTop: '20px',
@@ -49,7 +96,7 @@ const transcriptStyle = {
     backgroundColor: '#fff',
     borderRadius: '8px',
     boxShadow: '0 4px 24px rgba(77, 7, 239, 0.1)',
-    maxWidth: '1000px',
+    maxWidth: '1050px',
 };
 
 const pageStyle = {
@@ -84,9 +131,9 @@ const progressBarContainer = {
 };
 
 const getScoreColor = (score) => {
-    if (score < 5) return '#FF4136';     // Red
-    if (score < 8.0) return '#FF851B';   // Orange
-    return '#2ECC40';                    // Green
+    if (score < 5) return '#fc7c74';     // Red
+    if (score < 8.0) return '#f5bf90';   // Orange
+    return '#528d89';                    // Green
 };
 
 const getProgressBarStyle = (score) => ({
@@ -97,6 +144,21 @@ const getProgressBarStyle = (score) => ({
 });
 
 
+// custom icon components for 5 key points 
+const CheckIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="#28a745" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px' }}>
+    <path d="M6.00039 10.7998L2.80039 7.5998L1.86606 8.53314L6.00039 12.6665L15.0004 3.6665L14.0671 2.73314L6.00039 10.7998Z" />
+  </svg>
+);
+
+const CrossIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="#dc3545" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '8px' }}>
+    <path d="M9.41 8l3.3-3.29a1 1 0 10-1.42-1.42L8 6.59l-3.29-3.3a1 1 0 00-1.42 1.42L6.59 8l-3.3 3.29a1 1 0 101.42 1.42L8 9.41l3.29 3.3a1 1 0 001.42-1.42L9.41 8z" />
+  </svg>
+);
+
+
+
 const CandidateReport = () => {
     const { interviewId } = useParams();
     const [scores, setScores] = useState([]);
@@ -105,6 +167,7 @@ const CandidateReport = () => {
     const [summary, setSummary] = useState('');
     const [finalScore, setFinalScore] = useState(null);
     const [candidateName, setCandidateName] = useState('');
+    const [candidateLastName, setCandidateLastName] = useState('');
     const [jobTitle, setJobTitle] = useState('');
     const [report, setReport] = useState(null);
 
@@ -115,6 +178,7 @@ const CandidateReport = () => {
             .then(res => {setSummary(res.data.summary);
                            setFinalScore(res.data.final_score);
                            setCandidateName(res.data.candidate_name);
+                           setCandidateLastName((res.data.candidate_lastname))
                            setJobTitle(res.data.job_title);})
             .catch(err => console.error('Error fetching interview details:', err));
 
@@ -130,126 +194,225 @@ const CandidateReport = () => {
             .then(res => setTranscript(res.data))
             .catch(err => console.error('Error fetching transcript:', err));
     }, [interviewId]);
-    
 
-    return (
+
+    {/* function to handle downloading candidate report */}
+    const handleDownloadPDF = () => {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.getWidth();
+        const margin = 20;
+        const textWidth = pageWidth - margin * 2;
+        let y = 30;
+
+        doc.setFontSize(16);
+        doc.text("Interview Report", margin, 20);
+
+        doc.setFontSize(10);
+
+        if (report) {
+            doc.text(`Recommendation: ${report.recommendation}`, margin, y); y += 10;
+            doc.text(`Reason: ${report.reason}`, margin, y); y += 10;
+
+            doc.text("Resume Summary:", margin, y); y += 10;
+            doc.text(doc.splitTextToSize(report.resume_summary || '', textWidth), margin, y); y += 30;
+
+            doc.text("Interview Summary:", margin, y); y += 10;
+            doc.text(doc.splitTextToSize(report.interview_summary || '', textWidth), margin, y); y += 30;
+
+            doc.text("Key Insights:", margin, y); 
+            y += 8;
+
+            report.key_insights.forEach((insight) => {
+
+            // split the text to fit within page
+            const wrappedLines = doc.splitTextToSize(insight.text, textWidth - 10);
+
+            // Indented wrapped lines
+            wrappedLines.forEach((line) => {
+                doc.text("    " + line, margin, y); 
+                y += 6;
+            });
+
+            y += 4; // spacing between insights
+            });
+        }
+
+        doc.save(`${candidateName}_${candidateLastName}_report.pdf`);
+        };
+
+
+
+
+return (
         <div>
             {/* banner and logo */}
             <div style={bannerHeader}>
-                    <img 
-                        src="/static/logo.png" 
-                        alt="Company Logo" 
-                        style={bannerLogo}
-                    />
+                <img src="/static/logo.png" alt="Company Logo" style={bannerLogo} />
             </div>
-    
-            {/* page */}
+
             <div style={pageStyle}>
 
-                {/* candidate - job detail  */}
-                <h2>Candidate Report for Interview ID: {interviewId}</h2>
-                <p><strong>Candidate:</strong> {candidateName}</p>
-                <p><strong>Job Title:</strong> {jobTitle}</p>
+                {/* candidate - job detail */}
+                {/*  <div style={{ display: 'flex', gap: '20px', marginTop: '20px', marginLeft: '130px', marginRight: '330px' }}> */}
 
-                {/* box with scores - progress bars  */}
-                <div style={{...cardStyle, backgroundColor: '#f9f9f9', padding: '20px', maxWidth: '500px', width: '90%', margin: '30px 0 30px 40px',  borderRadius: '12px', boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)'}}>
-                        <h2 style={{ marginBottom: '20px', textAlign: 'center' }}>📊 Candidate Fit Overview</h2>
-
-                        {/* final score  */}
-                        <div style={{ marginBottom: '28px' }}>
-                            <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>Final Score</div>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                <div style={{ ...progressBarContainer, flex: 1 }}>
-                                    <div style={getProgressBarStyle(finalScore)} />
-                                </div>
-                                <span style={{ color: getScoreColor(finalScore), fontWeight: 'bold', minWidth: '50px' }}>
-                                    {finalScore !== null ? `${finalScore}/10` : 'N/A'}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* category score(s) */}
-                        <div>
-                            <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Category Scores</div>
-                            {scores.map((item, idx) => (
-                                <div key={idx} style={{ marginBottom: '16px' }}>
-                                    <div style={{ marginBottom: '4px' }}>{item.category}</div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                        <div style={{ ...progressBarContainer, flex: 1 }}>
-                                            <div style={getProgressBarStyle(item.score)} />
-                                        </div>
-                                        <span style={{ color: getScoreColor(item.score), fontWeight: 'bold', minWidth: '50px' }}>
-                                            {item.score}/10
-                                        </span>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                <div style={candidateHeaderContainer}>
+                {/* Left side: Profile + Candidate Info */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={profilePicStyle}>
+                    {(candidateName[0] || '') + (candidateLastName[0] || '')}
+                    </div>
+                    <div style={candidateInfoContainer}>
+                    <h2 style={{ marginBottom: '4px' }}>
+                        {(candidateName || 'Candidate')} {(candidateLastName || 'Name')}
+                    </h2>
+                    <p style={{ margin: 0, fontSize: '16px', color: '#555' }}>{jobTitle || 'Job Title'}</p>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#888' }}>Interview ID: {interviewId}</p>
+                    </div>
                 </div>
 
+                {/* Right side: Button group */}
+                <div style={buttonGroupStyle}>
+                    <button style={downloadButtonStyle} onClick={handleDownloadPDF}>
+                    Download Report
+                    </button>
+                    <button style={scheduleButtonStyle}>Schedule Interview</button>
+                </div>
+                </div>
 
-             {report && ( <>
-                             {/* resume summary */}
-                            <div style={cardStyle}>
-                                <h3>📄 Resume Summary</h3>
-                                <p>{report.resume_summary}</p>
-                            </div>
+                
 
-                            {/* interveiw summary */}
-                            <div style={cardStyle}>
-                                <h3>🗣️ Interview Summary</h3>
+                {report && (
+                    <>
+                        {/* flexbox for  (progress bar container - recommendation - resume summary) */}
+                        <div style={{display: 'flex', gap: '30px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '30px'}}>
+
+                                {/* Candidate Fit Overview */}
+                                <div style={{ ...cardStyle,backgroundColor: '#f9f9f9', padding: '20px', maxWidth: '500px', flex: 1, borderRadius: '12px',
+                                    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
+                                    <h2 style={{ marginBottom: '20px', textAlign: 'center' }}> Candidate Fit Overview</h2>
+
+                                    {/* Final Score */}
+                                    <div style={{ marginBottom: '28px' }}>
+                                        <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>Final Score</div>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                            <div style={{ ...progressBarContainer, flex: 1 }}>
+                                                <div style={getProgressBarStyle(finalScore)} />
+                                            </div>
+                                            <span style={{ color: getScoreColor(finalScore), fontWeight: 'bold', minWidth: '50px' }}>
+                                                {finalScore !== null ? `${finalScore}/10` : 'N/A'}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* each Category score */}
+                                    <div>
+                                        <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Category Scores</div>
+                                        {scores.map((item, idx) => (
+                                            <div key={idx} style={{ marginBottom: '16px' }}>
+                                                <div style={{ marginBottom: '4px' }}>{item.category}</div>
+                                                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <div style={{ ...progressBarContainer, flex: 1 }}>
+                                                        <div style={getProgressBarStyle(item.score)} />
+                                                    </div>
+                                                    <span style={{ color: getScoreColor(item.score), fontWeight: 'bold', minWidth: '50px' }}>
+                                                        {item.score}/10
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Recommendation */}
+                                <div style={{ ...cardStyle, flex: 1, maxWidth: '500px' }}>
+                                    <h3>Recommendation</h3>
+                                    <h3>{report.recommendation === "recommended" ? "✅ Move to next round" : "❌ Not Recommended"}</h3>
+                                    <p> {report.reason}</p>
+                                </div>
+
+                                {/* Resume Summary */}
+                                <div style={{ ...cardStyle, flex: 1, maxWidth: '500px' }}>
+                                    <h3>Resume Summary</h3>
+                                    <p>{report.resume_summary}</p>
+                                </div>
+                        </div>
+
+                        {/* Centered container for Interview Summary and Key Insights */}
+                        <div style={{ marginLeft: '5px', marginTop: '30px' }}>
+                            {/* Interview Summary */}
+                            <div style={{ ...cardStyle, maxWidth: '1050px', width: '100%' }}>
+                                <h3>Interview Summary</h3>
                                 <p>{report.interview_summary}</p>
                             </div>
 
-                            {/* rrecommendation part  */}
-                            <div style={cardStyle}>
-                                <h3>{report.recommendation === "recommended" ? "✅ Recommended" : "❌ Not Recommended"}</h3>
-                                <p><strong>Reason:</strong> {report.reason}</p>
-                            </div>
-
-                            {/* 5 bulletpoints  */}
-                            <div style={cardStyle}>
-                                <h3>🔍 Key Insights</h3>
+                            {/* Key Insights */}
+                            <div style={{ ...cardStyle, maxWidth: '1050px', width: '100%' }}>
+                                <h3> Key Insights</h3>
                                 <ul>
-                                    {report.key_insights.map((insight, idx) => (
-                                        <li key={idx}>
-                                            <strong>{insight.label === "good" ? "✅" : "❌"} </strong>
-                                            {insight.text}
-                                        </li>
-                                    ))}
+                                {report.key_insights.map((insight, idx) => (
+                                    <li key={idx} style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
+                                    {insight.label === 'good' ? <CheckIcon /> : <CrossIcon />}
+                                    <span>{insight.text}</span>
+                                    </li>
+                                ))}
                                 </ul>
                             </div>
-                        </>
-                    )}
+                        </div>
+                    </>
+                )}
+
+                {/*  container for all category details */}
+                <div style={{
+                marginLeft: '5px',
+                padding: '30px',
+                backgroundColor: '#fff',
+                borderRadius: '16px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                maxWidth: '1025px'
+                }}>
+                <h2 style={{ marginBottom: '20px' }}>Category Breakdown</h2>
+
+                {scores.map((item, idx) => {
+                    const backgroundColor = item.score > 8 ? '#f2fdfb' : '#e4e7eb'; //  green or gray
+
+                    return (
+                            <div
+                            key={idx}
+                            style={{
+                                backgroundColor,
+                                padding: '20px',
+                                borderRadius: '10px',
+                                marginBottom: '20px',
+                                maxWidth: '1000px',
+                            }}
+                            >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <h3 style={{ margin: 0 }}>{item.category}</h3>
+                                <span style={{ fontWeight: 'bold', fontSize: '18px', color: getScoreColor(item.score) }}>
+                                {item.score}/10
+                                </span>
+                            </div>
+                            <p style={{ marginTop: '10px' }}> {item.reason}</p>
+                            </div>
+                        );
+                })}
+                </div>
 
 
-                {/* all category scoring & details  */}
-                {scores.map((item, idx) => (
-                    <div style={cardStyle} key={idx}>
-                        <h3>{item.category}</h3>
-                        <p style={{ ...scoreStyle, color: getScoreColor(item.score) }}>
-                            Score: {item.score}/10 </p>
-                        <p style={reasonStyle}>Reason: {item.reason}</p>
-                    </div>
-                ))}
-    
-                {/* transcript expanising button  */}
-                <button 
-                  onClick={() => setShowTranscript(!showTranscript)}
-                  style={buttonStyle}  
-                  >
-                  {showTranscript ? 'Hide Transcript' : 'View Transcript'}
+
+                {/* Transcript button */}
+                <button onClick={() => setShowTranscript(!showTranscript)} style={buttonStyle}>
+                    {showTranscript ? 'Hide Transcript' : 'View Transcript'}
                 </button>
 
-    
-                {/* transcript Q & A  */}
+                {/* transcript */}
                 {showTranscript && (
                     <div style={transcriptStyle}>
                         <h3>Full Transcript</h3>
                         {transcript.map((t, i) => (
                             <div key={i}>
-                                <strong>Q:</strong> {t.question} <br />
-                                <strong>A:</strong> {t.answer} <br /><br /> 
+                                <strong>Q:{t.question} </strong>  <br />
+                                <strong>A:</strong> {t.answer} <br /><br />
                             </div>
                         ))}
                     </div>
@@ -257,7 +420,6 @@ const CandidateReport = () => {
             </div>
         </div>
     );
-
 };
 
 export default CandidateReport;

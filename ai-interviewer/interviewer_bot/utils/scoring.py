@@ -92,12 +92,12 @@ def get_score(client:OpenAI , category: str , qa_text: str)  -> tuple[float | No
 
     system_prompt = (
         "You're an AI interviewer assistant helping to evaluate candidate responses. "
-        "Your job is to analyze interview answers in a specific category and return a score from 1 to 10, along with a short explanation.")
+        "Your job is to analyze interview answers in a specific category and return a score from 1 to 10, along with a short and brief explanation.")
 
     user_prompt = f""" Evaluate the following responses in the category: "{category}"
                         Respond with only a JSON object that includes:
                              - "score": a number between 1 and 10 (float allowed)
-                             - "reason": a short explanation for the score
+                             - "reason": a very short explanation for the score
                             \nResponses:{qa_text}"""
 
     response = client.chat.completions.create(
