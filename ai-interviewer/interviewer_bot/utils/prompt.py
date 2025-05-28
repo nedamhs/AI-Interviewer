@@ -74,7 +74,8 @@ PROMPT_DICT = {#"location"            : location_prompt(),
                "experience"          : prev_experience_prompt(), 
                #"teamwork"            : teamwork_prompt(), 
                #"communication"       : communication_prompt(), 
-               #"preference"          : preference_prompt()}
+               #"preference"          : preference_prompt()
+               }
 
 
 def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
