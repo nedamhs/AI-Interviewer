@@ -22,6 +22,7 @@ def get_interview_details(request, interview_id):
         "summary": interview.summary or "No summary available.",
         "final_score": interview.final_score if interview.final_score is not None else "Not scored yet",
         "candidate_name": interview.candidate.user.first_name,
+        "candidate_lastname": interview.candidate.user.last_name,
         "job_title": interview.job.title,
     }
 
