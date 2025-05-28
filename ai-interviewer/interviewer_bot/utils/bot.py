@@ -17,7 +17,7 @@ def get_client() -> OpenAI:
     )
     return client 
 
-#def get_bot_response(client: OpenAI, conversation_history: list, model_type: str = "gpt-4o-mini", tools: list = [], tool_choice: dict = None) -> dict:
+
 def get_bot_response(client: OpenAI, conversation_history: list, model_type: str = "gpt-4o", tools: list = [], tool_choice: dict = None) -> dict:
     '''
     Gives the bot conversation history and then sends back a reply to the user. 
