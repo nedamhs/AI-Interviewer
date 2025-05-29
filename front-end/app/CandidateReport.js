@@ -342,13 +342,13 @@ return (
                                 }}>
                                     {report.recommendation === "recommended" ? "✅ Move to next round" : "❌ Not Recommended"}
                                 </h3>
-                                <p style={{ fontSize: '16px', lineHeight: '1.5' }}>{report.reason}</p>
+                                <p style={{ fontSize: '18px', lineHeight: '1.5' }}>{report.reason}</p>
                                 </div>
 
                                 {/* Resume Summary */}
                                 <div style={{ ...cardStyle, flex: 1, maxWidth: '500px' }}>
                                     <h3>Resume Summary</h3>
-                                    <p style={{ fontSize: '16px', lineHeight: '1.5' }}>{report.resume_summary}</p> 
+                                    <p style={{ fontSize: '18px', lineHeight: '1.5' }}>{report.resume_summary}</p> 
                                 </div>
                         </div>
 
