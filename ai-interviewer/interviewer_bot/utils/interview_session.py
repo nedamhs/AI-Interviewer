@@ -248,6 +248,9 @@ class InterviewSession:
         Finalizes the interview by marking it as "awaiting feedback", saving the end time,
         and writing the conversation transcript to the database and a jason file.
         """
+        
+        self.response_callback("Thank you for your responses. The interview has ended. Please wait for our hiring team to contact you for the next steps.")
+        
         self.phase = "ENDED"
         self.interview_object.end = timezone.now()
         self.interview_object.status = InterviewStatusChoices.AWAITING_FEEDBACK
