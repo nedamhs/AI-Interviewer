@@ -72,9 +72,10 @@ const downloadButtonStyle = {
   backgroundColor: 'white',
   color: '#6266f1',
   border: '2px solid #6266f1',
-  padding: '8px 16px',
+  padding: '12px 24px',
   borderRadius: '6px',
   fontWeight: 'bold',
+  fontSize: '16px',
   cursor: 'pointer',
 };
 
@@ -82,9 +83,10 @@ const scheduleButtonStyle = {
   backgroundColor: '#6266f1',
   color: 'white',
   border: 'none',
-  padding: '8px 16px',
+  padding: '12px 24px',
   borderRadius: '6px',
   fontWeight: 'bold',
+  fontSize: '16px',
   cursor: 'pointer',
 };
 
@@ -131,9 +133,9 @@ const progressBarContainer = {
 };
 
 const getScoreColor = (score) => {
-    if (score < 5) return '#fc7c74';     // Red
-    if (score < 8.0) return '#f5bf90';   // Orange
-    return '#528d89';                    // Green
+    if (score < 5) return '#E74C3C';     // Red
+    if (score < 8.0) return '#FFD796';   // Orange
+    return '#558F8E';                    // Green
 };
 
 const getProgressBarStyle = (score) => ({
@@ -205,7 +207,7 @@ const CandidateReport = () => {
         let y = 30;
 
         doc.setFontSize(16);
-        doc.text("Interview Report", margin, 20);
+        doc.text("Interview Report for "+ candidateName, margin, 20);
 
         doc.setFontSize(10);
 
@@ -253,10 +255,9 @@ return (
             <div style={pageStyle}>
 
                 {/* candidate - job detail */}
-                {/*  <div style={{ display: 'flex', gap: '20px', marginTop: '20px', marginLeft: '130px', marginRight: '330px' }}> */}
 
                 <div style={candidateHeaderContainer}>
-                {/* Left side: Profile + Candidate Info */}
+                {/* Profile pic & candidate Info */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <div style={profilePicStyle}>
                     {(candidateName[0] || '') + (candidateLastName[0] || '')}
@@ -270,7 +271,7 @@ return (
                     </div>
                 </div>
 
-                {/* Right side: Button group */}
+                {/* Buttons*/}
                 <div style={buttonGroupStyle}>
                     <button style={downloadButtonStyle} onClick={handleDownloadPDF}>
                     Download Report
@@ -287,53 +288,67 @@ return (
                         <div style={{display: 'flex', gap: '30px', justifyContent: 'center', flexWrap: 'wrap', marginTop: '30px'}}>
 
                                 {/* Candidate Fit Overview */}
-                                <div style={{ ...cardStyle,backgroundColor: '#f9f9f9', padding: '20px', maxWidth: '500px', flex: 1, borderRadius: '12px',
+                                <div style={{ ...cardStyle, padding: '20px', maxWidth: '500px', flex: 1, borderRadius: '12px',
                                     boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)' }}>
-                                    <h2 style={{ marginBottom: '20px', textAlign: 'center' }}> Candidate Fit Overview</h2>
+                                  {/* <h2 style={{ marginBottom: '20px', textAlign: 'center' }}> Candidate Fit Overview</h2> */}
 
                                     {/* Final Score */}
-                                    <div style={{ marginBottom: '28px' }}>
-                                        <div style={{ fontWeight: 'bold', marginBottom: '6px' }}>Final Score</div>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                                            <div style={{ ...progressBarContainer, flex: 1 }}>
-                                                <div style={getProgressBarStyle(finalScore)} />
-                                            </div>
-                                            <span style={{ color: getScoreColor(finalScore), fontWeight: 'bold', minWidth: '50px' }}>
-                                                {finalScore !== null ? `${finalScore}/10` : 'N/A'}
-                                            </span>
+                                    <div style={{ marginBottom: '36px' }}>
+                                    <div style={{ fontWeight: 'bold', fontSize: '20px', marginBottom: '10px' }}>
+                                        Candidate Fit Score
+                                    </div>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                                        <div style={{ ...progressBarContainer, height: '15px', flex: 2 }}>
+                                        <div style={getProgressBarStyle(finalScore)} />
                                         </div>
+                                        <span
+                                        style={{
+                                            color: getScoreColor(finalScore),
+                                            fontWeight: 'bold',
+                                            fontSize: '18px',
+                                            minWidth: '60px',
+                                        }}
+                                        >
+                                        {finalScore !== null ? `${finalScore}/10` : 'N/A'}
+                                        </span>
+                                    </div>
                                     </div>
 
                                     {/* each Category score */}
                                     <div>
-                                        <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Category Scores</div>
-                                        {scores.map((item, idx) => (
-                                            <div key={idx} style={{ marginBottom: '16px' }}>
+                                       {/* <div style={{ fontWeight: 'bold', marginBottom: '10px' }}>Category Scores</div> */}
+                                        {scores.filter(item => item.category !== "location")
+                                            .map((item, idx) => (
+                                                <div key={idx} style={{ marginBottom: '16px' }}>
                                                 <div style={{ marginBottom: '4px' }}>{item.category}</div>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                                                     <div style={{ ...progressBarContainer, flex: 1 }}>
-                                                        <div style={getProgressBarStyle(item.score)} />
+                                                    <div style={getProgressBarStyle(item.score)} />
                                                     </div>
                                                     <span style={{ color: getScoreColor(item.score), fontWeight: 'bold', minWidth: '50px' }}>
-                                                        {item.score}/10
+                                                    {item.score}/10
                                                     </span>
                                                 </div>
-                                            </div>
-                                        ))}
+                                                </div>
+                                            ))}
                                     </div>
                                 </div>
 
                                 {/* Recommendation */}
                                 <div style={{ ...cardStyle, flex: 1, maxWidth: '500px' }}>
-                                    <h3>Recommendation</h3>
-                                    <h3>{report.recommendation === "recommended" ? "✅ Move to next round" : "❌ Not Recommended"}</h3>
-                                    <p> {report.reason}</p>
+                                <h3>Recommendation</h3>
+                                <h3 style={{ 
+                                    color: report.recommendation === "recommended" ? "#558F8E" : "#dc3545"
+                                }}>
+                                    {report.recommendation === "recommended" ? "✅ Move to next round" : "❌ Not Recommended"}
+                                </h3>
+                                <p style={{ fontSize: '16px', lineHeight: '1.5' }}>{report.reason}</p>
                                 </div>
 
                                 {/* Resume Summary */}
                                 <div style={{ ...cardStyle, flex: 1, maxWidth: '500px' }}>
                                     <h3>Resume Summary</h3>
-                                    <p>{report.resume_summary}</p>
+                                    <p style={{ fontSize: '16px', lineHeight: '1.5' }}>{report.resume_summary}</p> 
                                 </div>
                         </div>
 
