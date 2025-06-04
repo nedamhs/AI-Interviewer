@@ -1,9 +1,11 @@
 import requests
 import json
+from urllib.parse import urlparse, parse_qs
 
 from dotenv import load_dotenv
 
 from .zoom_auth import get_access_token
+from .utils.calendly_link import get_earliest_calendly_zoom_link
 
 # load .env file 
 load_dotenv()
@@ -91,6 +93,34 @@ class Meeting:
         except Exception as e:
             print(f"An unexpected error occurred during meeting creation: {e}")
             return None
+
+
+    def meeting_from_calendly(self):
+        """
+        - Fetches the earliest upcoming Zoom link from Calendly and extracts meeting details.
+        - eliminate the need for manual meeting creatiion via create_zoom_meeting
+        - calendly handles creating meetings. 
+        - here we just get the link from calendly api, then get the meeting id & pass from url
+        - which can be passed to the bot.
+
+        https://help.calendly.com/hc/en-us/articles/14075911977623-Calendly-Zoom#h_01FQ275PPS286AZMT7T4QANKE8
+
+        """
+        zoom_url = get_earliest_calendly_zoom_link()
+        if not zoom_url:
+            print("No valid Zoom link found from Calendly.")
+            return False
+
+        # parse and store
+        parsed = urlparse(zoom_url)
+        path_parts = parsed.path.split('/')
+        self.meeting_id = path_parts[-1]
+        self.encrypted_password = parse_qs(parsed.query).get("pwd", [None])[0]
+        self.join_url = zoom_url
+
+        print(f"[Calendly] Loaded Zoom meeting: {self.meeting_id}")
+        return True
+
 
     def end_zoom_meeting(self):
         """

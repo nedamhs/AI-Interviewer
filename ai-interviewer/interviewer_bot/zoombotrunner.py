@@ -11,10 +11,11 @@ from .utils.interview_session import InterviewSession
 gi.require_version('GLib', '2.0')
 
 class ZoomBotRunner:
-    def __init__(self, interview : InterviewSession):
+    def __init__(self, interview : InterviewSession, use_calendly=False):
 
         self.interview = interview
 
+        self.use_calendly = use_calendly
         self.bot = None
         self.meeting = None
         self.main_loop = None
@@ -84,19 +85,33 @@ class ZoomBotRunner:
     def run(self):
         """Main run method"""
         self.meeting = Meeting()
-        
-        try:
-            self.meeting.create_zoom_meeting()
-        except Exception as e:
-            print(e)
-            self.exit_process()
-        
-        if self.meeting.meeting_id == None:
-            print("meeting failed to create")
-            self.exit_process()
-            return
-        
-        print("Meeting created! Link: ", self.meeting.join_url)
+
+        if self.use_calendly: # get link of meeting created by calendly
+
+            if not self.meeting.meeting_from_calendly(): 
+                print("Meeting failed to load from Calendly.")
+                self.exit_process()
+                return
+
+            print("Meeting loaded from Calendly! Link:", self.meeting.join_url)
+
+        else:  #creates meeting and get link 
+    
+                try:
+                    self.meeting.create_zoom_meeting()
+                except Exception as e:
+                    print(e)
+                    self.exit_process()
+                
+                if self.meeting.meeting_id == None:
+                    print("meeting failed to create")
+                    self.exit_process()
+                    return
+                
+                print("Meeting created! Link: ", self.meeting.join_url)
+
+
+
         
         self.bot = MeetingBot(self.meeting.meeting_id, self.meeting.encrypted_password, self.interview)
         

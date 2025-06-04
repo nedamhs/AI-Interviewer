@@ -25,6 +25,8 @@ def get_random_job():
 
 if __name__ == "__main__":
     rand_job, rand_talent = get_random_job()
+
+    # terminal chatbot 
     if len(sys.argv) > 1 and sys.argv[1] == "--terminal":
         interview = InterviewSession(rand_job, rand_talent, receive_response)
         interview.start()
@@ -32,6 +34,16 @@ if __name__ == "__main__":
             i = input("You: ")
             interview.send_response(i)
 
+    # earliest scheduled meeting from calendly
+    elif len(sys.argv) > 1 and sys.argv[1] == "--calendly":
+        interview = InterviewSession(rand_job, rand_talent)
+        runner = ZoomBotRunner(interview, use_calendly=True)
+
+        signal.signal(signal.SIGINT, runner.on_signal)
+        signal.signal(signal.SIGTERM, runner.on_signal)
+        runner.run()
+
+    # instant meeting  
     else:
         interview = InterviewSession(rand_job, rand_talent)
         runner = ZoomBotRunner(interview)
