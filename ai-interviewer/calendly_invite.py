@@ -15,7 +15,7 @@ from profiles.models import TalentProfile
 # email setup is in settings.py 
 
 
-def render_template(filename:str, context: dict) -> ...:
+def render_template(filename:str, context: dict) -> str:
     '''
     Loads the HTML template with personalized items for the user
 
@@ -38,7 +38,7 @@ def render_template(filename:str, context: dict) -> ...:
         content = content.replace(f'{{{{ {key} }}}}', value)
     return content
 
-def send_calendly_invite(email: str, name: str, job_title: str, calendly_link: str)-> None:
+def send_calendly_invite(email: str, name: str, job_title: str, calendly_link: str) -> None:
     '''
     Sends an email to the desired user via calendly 
 

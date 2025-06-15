@@ -2,7 +2,6 @@ import asyncio
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 from openai._response import AsyncStreamedBinaryAPIResponse
-# import sounddevice as sd # commented to run chatbot in container
 import os
 import numpy as np
 from scipy.signal import resample_poly

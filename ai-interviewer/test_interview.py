@@ -13,7 +13,7 @@ from interviewer_bot.zoombotrunner import ZoomBotRunner
 from profiles.models import TalentProfile
 from jobs.models import Job
 
-def receive_response(response):
+def receive_response(response : str) -> None:
     '''
     Function Required to run locally via terminal
 
