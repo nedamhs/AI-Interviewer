@@ -1,9 +1,7 @@
 import requests
 import json
 from urllib.parse import urlparse, parse_qs
-
 from dotenv import load_dotenv
-
 from .zoom_auth import get_access_token
 from .utils.calendly_link import get_earliest_calendly_zoom_link
 
@@ -15,6 +13,7 @@ CREATE_MEETING_URL = "https://api.zoom.us/v2/users/me/meetings"
 
 
 class Meeting:
+    """Zoom meeting controls"""
     def __init__(self):
         self.meeting_id = None
         self.join_url = None

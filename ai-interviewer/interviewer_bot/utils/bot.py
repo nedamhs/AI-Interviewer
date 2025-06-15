@@ -5,7 +5,7 @@ def get_client() -> OpenAI:
     '''
     Initalizes an instance of the client and returns it to the requested source 
 
-    Inputs:
+    Parameters:
         None
 
     Returns:
@@ -22,7 +22,7 @@ def get_bot_response(client: OpenAI, conversation_history: list, model_type: str
     '''
     Gives the bot conversation history and then sends back a reply to the user. 
 
-    Inputs: 
+    Parameters: 
         client : OpenAI
             Uses the client to send the call
         conversation_history : list

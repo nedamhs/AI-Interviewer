@@ -12,6 +12,7 @@ from functools import partial
 
 
 class DeepgramTranscriber:
+    """Transcriber for the zoom bot"""
     def __init__(self, message_callback):
         config = DeepgramClientOptions(options={"keepalive": "true"})
         self.message_callback = message_callback

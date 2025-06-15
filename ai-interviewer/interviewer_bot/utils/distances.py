@@ -40,7 +40,7 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
     """
     Calculate the great-circle distance between two points on the Earth using the Haversine formula.
 
-    Inputs::
+    Parameters:
         lat1: float 
             Latitude of the first point in degrees.
         lon1: float 

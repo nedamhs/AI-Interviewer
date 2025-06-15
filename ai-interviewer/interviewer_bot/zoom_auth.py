@@ -19,11 +19,11 @@ ZAK_URL = "https://api.zoom.us/v2/users/me/token?type=zak"
 
 access_token = None
 def get_access_token() -> str:
-    """
+    '''
     
     Function to obtain a S2S OAuth access token from Zoom.
     
-    """
+    '''
     global access_token
     if access_token != None:
         return access_token
@@ -64,7 +64,7 @@ def get_access_token() -> str:
         return None
 
 def get_zak():
-    
+    '''Gathers the ZAK auth token necessary for zoom'''
     token = get_access_token()
     
     if not token:

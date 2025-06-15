@@ -26,7 +26,7 @@ class InterviewSession:
         """
         InterviewSession constructor
         
-        Inputs: 
+        Parameters: 
             job : Job 
                 Job object from django database
             talent : TalentProfile 
@@ -219,7 +219,7 @@ class InterviewSession:
         """
         Recieve response from input and ask question according to current phase
         
-        Inputs: 
+        Parameters: 
             response : str 
                 Response of user to the previously asked interview question
                 
@@ -269,7 +269,7 @@ class InterviewSession:
         """
         Update the conversation history and the transcript by adding input into it 
 
-        Inputs: 
+        Parameters: 
             role : str 
                 The role of whoever is speaking (user or assistant)
             input : str 

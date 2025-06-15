@@ -7,11 +7,6 @@ def get_user_input(timeout: int = 5 * 60, warning_time: int = 60 ) -> str:
     '''
     Timed input system for the user, will timeout if the user takes greater than the timeout time to respond. This function will 
     send a timeout warning when [warning_time] seconds remain.
-    
-    TODO:
-        Change for getting the input from the webapp rather than the terminal app  
-        Penalize users for taking too long to respond
-        Change how the exit case works if the user takes too long to respond 
 
     Inputs:
         timeout : Int 

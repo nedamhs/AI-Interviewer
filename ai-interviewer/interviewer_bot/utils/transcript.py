@@ -8,13 +8,13 @@ def write_to_transcript(id: int, user: str, messages: list) -> None:
     '''
     Creates a dictionary, converts it to a json object and writes to a json file
     
-    Inputs:
+    Parameters:
         id : Int 
             Conversation id to link a screening interview transcript to a user
         user : User
             Links the users first name to the transcript 
         messages : list
-            transcript of the message history and who said what during the interview
+            Transcript of the message history and who said what during the interview
 
     Returns: 
         None    
@@ -32,9 +32,11 @@ def write_transcript_to_db(interview: Interview, messages: list)-> None:
     Pairs assistant questions with user answers. Handles unmatched messages (extra assistant or user )
     and assigns a shared session_id for all entries in a session.
 
-    Args:
-        interview: The interview object to link transcripts to.
-        messages: List of dicts with "role" ("assistant" or "user") and "content" (str).
+    Parameters:
+        interview: Interview
+            The interview object to link transcripts to.
+        messages: list
+            List of dicts with "role" ("assistant" or "user") and "content" (str).
 
     Returns:
         None

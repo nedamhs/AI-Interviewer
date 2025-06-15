@@ -2,17 +2,14 @@ import os
 import cv2
 import gi
 import jwt
-import sys
 import asyncio
 import queue
 import time 
 import zoom_meeting_sdk as zoom
-from datetime import datetime, timedelta
 import numpy as np
+from datetime import datetime, timedelta
 from gi.repository import GLib
-
-
-from .deepgram_transcriber import DeepgramTranscriber
+from audio_utils.deepgram_transcriber import DeepgramTranscriber
 from .utils.interview_session import InterviewSession
 from .zoom_auth import get_zak
 from .audio_utils.text_to_speech import text_to_audio
@@ -54,7 +51,7 @@ def normalized_rms_audio(pcm_data: bytes, sample_width: int = 2) -> bool:
     """
     Determine if PCM audio data contains significant audio or is essentially silence.
     
-    Args:
+    Parameters:
         pcm_data: Bytes object containing PCM audio data in linear16 format
         threshold: RMS amplitude threshold below which audio is considered silent (0.0 to 1.0)
         sample_width: Number of bytes per sample (2 for linear16)
@@ -131,6 +128,7 @@ def createFrame(width, height, volume):
     return yuv.tobytes()
 
 class MeetingBot:
+    """Main conversion of the zoom meeting bot"""
     def __init__(self, meeting_id : str, meeting_pwd : str, interview : InterviewSession):
         
         self.interview = interview
@@ -187,13 +185,10 @@ class MeetingBot:
         self.chat_ctrl_event = None
         #event loop for async call
         self._LOOP = None
-        #DEBUG FLAG MEANT TO TEST DUMMY INTERVIEWS 
-        self._DEBUG = True
         self.shutdown = False
         self.alone = True
         self.start_time = None 
         self.disable_STT = False
-        #timeout after ending 
        
     def cleanup(self):
         if self.meeting_service:
@@ -293,6 +288,7 @@ class MeetingBot:
 
 
     def on_user_leave_callback(self,joined_user_ids, user_name):
+        """starts a timer once the user leaves"""
         print(f"{user_name} has left")
         self.alone = True
         self.start_time = time.time()
@@ -369,16 +365,34 @@ class MeetingBot:
 
     def on_mic_start_send_callback(self):
         print("on_mic_start_send_callback called")
-        # time.sleep(20)
-        # self.tts("this is an extremely long test to ensure that this is a proper working function and that I am allowed to write extremely long things into this without it breaking on me due to zoom logic.")
+        pass
 
-    def tts(self, text):
-        '''TTS '''
+    def tts(self, text:str) -> None:
+        """
+        Begins the text to speech loop, disables the STT so you cannot talk over what the bot is saying. 
+
+        Parameters: 
+            text : str
+                bot input text which will be converted into audio
+        Returns: 
+            None
+        """
         self.disable_STT = True
         self._LOOP.run_until_complete(text_to_audio(text, self.send_to_zoom))
         self.disable_STT = False
 
-    def send_to_zoom(self, data: bytes, rate: int):
+    def send_to_zoom(self, data: bytes, rate: int) -> None:
+        """
+        Send audio to the zoom client to be sent out to the zoom meeting. This data needs to be PCM and 32k to properly be heard in zoom. 
+        
+        Parameters: 
+            data : bytes
+                stream of bytes of audio
+            rate : int
+                rate of the PCM audio
+        Returns: 
+            None 
+        """
         self.audio_raw_data_sender.send(data, rate, zoom.ZoomSDKAudioChannel_Mono)
 
     def on_one_way_audio_raw_data_received_callback(self, data, node_id):
@@ -557,6 +571,7 @@ class MeetingBot:
         print("meeting_status_changed called. status =",status,"iResult=",iResult)
 
     def create_services(self):
+        """Initaites the zoom services"""
         self.meeting_service = zoom.CreateMeetingService()
         
         self.setting_service = zoom.CreateSettingService()

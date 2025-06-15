@@ -24,8 +24,17 @@ def extract_zoom_link(location):
     return None
 
 
-def get_all_zoom_links():
+def get_all_zoom_links() -> list:
+    """
+    Gathers all the zoom links for a given user
 
+    Parameters: 
+        None
+        
+    Returns: 
+        zoom_links : list
+            list of zoom links with the given zoom link, start time, and candidate name
+    """
     headers = { "Authorization": f"Bearer {CALENDLY_API_KEY}"}
 
     # Calendly user URI
@@ -79,7 +88,7 @@ def get_all_zoom_links():
 #     return links[0]["zoom_link"]
 
 def get_earliest_calendly_zoom_link():
-    """Returns the earliest upcoming  zoom meeting link only."""
+    """Returns the earliest upcoming zoom meeting link only."""
     links = get_all_zoom_links()
     if not links:
         return None

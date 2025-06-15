@@ -5,7 +5,17 @@ from transcripts.models import Transcript, InterviewScore, CategoryChoices
 from interviews.models import Interview , InterviewReport
 
 def generate_report_components(interview: Interview, client:OpenAI) -> None:
-
+    """
+    Creates a report based on how the interview went and generates a summary report giving a recommendation.
+    
+    Parameters: 
+        interview : Interview
+            the total interview structure with a completed interview
+        client : OpenAI
+            the bot used to score the candidate
+    Returns: 
+        None
+    """
     candidate = interview.candidate
     job = interview.job
 
@@ -43,6 +53,22 @@ def generate_report_components(interview: Interview, client:OpenAI) -> None:
 
 
 def get_report_components(resume: str, job_description: str, interview_transcript: str, client: openai.OpenAI) -> dict:
+    """
+    Utilizes prompts to generate the required information based on the interview candidate
+    
+    Parameters: 
+        resume : str
+            Candidates resume 
+        job_description : str
+            Job the candidate got the interview for 
+        interview_transcript : str
+            The entire transcript of the interview
+        client : opensi.OpenAI
+            The bot used to score the candidate
+    Returns:
+        dict[str]
+            returns a dictionary of the report components
+    """
     system_prompt = (
         "You are an interview analysis assistant. "
         "Given a resume, job description, and interview transcript, "

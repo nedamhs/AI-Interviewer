@@ -9,6 +9,14 @@ def evaluate_response_action(client: OpenAI, category: str, category_qa: str) ->
         - re_ask
     Optionally provides a follow-up suggestion if applicable.
 
+    Parameters: 
+        client: OpenAI
+            the bot which is used to evaluate the question and answer
+        category: str 
+            current category 
+        category_qa: str
+            the question and answer associated with the category
+
     Returns:
         action (str): one of 'proceed', 'follow_up', 're_ask'
         followup_suggestion (str or None): A follow-up question or clarification suggestion if needed

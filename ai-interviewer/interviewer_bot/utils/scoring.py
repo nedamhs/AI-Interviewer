@@ -20,7 +20,7 @@ def score_interview(interview: Interview, client:OpenAI) -> None:
     - Uses the LLM to evaluate the responses and return a score and explanation.
     - store the score and explanation in the InterviewScore table.
 
-    Input:
+    Parameters:
         interview (Interview): The interview instance to be scored.
         client (OpenAI): An OpenAI API client used to generate scores for the Q&A pairs.
 
@@ -80,7 +80,7 @@ def get_score(client:OpenAI , category: str , qa_text: str)  -> tuple[float | No
         - a numeric score between 1 and 10 (can be float)
         - a short explanation ("reason") for the assigned score.
 
-    Input:
+    Parameters:
         client (OpenAI): The OpenAI API client instance for generating the score.
         category (str): The name of the interview category being evaluated.
         qa_text (str):  string containing all q/a pairs for this category.

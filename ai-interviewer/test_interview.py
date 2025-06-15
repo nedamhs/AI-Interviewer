@@ -14,9 +14,30 @@ from profiles.models import TalentProfile
 from jobs.models import Job
 
 def receive_response(response):
+    '''
+    Function Required to run locally via terminal
+
+        Parameters:
+            response: str 
+                text which will be printed via print function.
+        Returns: 
+            None
+    '''
     print("Interviewer: ", response)
 
-def get_random_job():
+def get_random_job() -> tuple[Job, TalentProfile]:
+    '''
+    Returns a random Job object and TalentProfile object from the database.
+
+        Parameters:
+            None
+        Returns: 
+            rand_job: Job
+                Random Job object from the database 
+            rand_talent: TalentProfile
+                Random TalentProfile from the database
+
+    '''
     rand_job = Job.objects.order_by('?').first()
     rand_talent = TalentProfile.objects.order_by('?').first()
     print("Conducting a random interview for the position " + rand_job.title +

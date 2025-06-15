@@ -1,4 +1,13 @@
 def end_interview() -> dict:
+    """
+    Tools used to end interview which is send to the openai bot
+
+    Parameters:
+        None
+    Returns: 
+       dict
+            formatted dictionary telling openai what to do 
+    """
     return {
         "type": "function",
         "function":
@@ -21,6 +30,15 @@ def end_interview() -> dict:
 
 
 def stop_interview_relocation() -> dict:
+    """
+    Tools used to end the interview if the location of the candidate is not desirable and unable or unwilling to relocate
+
+    Parameters:
+        None
+    Returns: 
+        dict
+            formatted dictionary to tell openai what to do
+    """
     return {
         "type": "function",
         "function":
@@ -44,6 +62,15 @@ def stop_interview_relocation() -> dict:
 
 
 def ask_relocation_confirmation() -> dict:
+    """
+    Tools used to confirm if the candidate is unwilling to relocate which is send to the openai bot
+
+    Parameters:
+        None
+    Returns: 
+        dict
+            formatted dictionary telling openai what to do
+    """
     return {
         "type": "function",
         "function":

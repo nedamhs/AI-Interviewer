@@ -10,7 +10,19 @@ from .distances import calculate_distance
 import random
 
 def location_prompt(min_dist : int, remote_option : bool) -> list[str]:
+    """
+    Gathers the distance of the canddiate in relative position to the job, then sends a specific prompt based on these results
 
+    Parameters:
+        min_dist : int 
+            Calculated distance of the candidate from the job location
+        remote_option : bool 
+            Offers the user an option to do the job remotely if offered 
+    
+    Returns: 
+        questions: list[str]
+            The list of types of location questions the bot should be asking
+    """
     questions = [
         "Ask Where are they currently located? If there is a specific location you find on their resume, ask if they are still located at said location. if there are multiple locations listed in their profile, ask which one is their current location",
     ]
@@ -27,6 +39,16 @@ def location_prompt(min_dist : int, remote_option : bool) -> list[str]:
     return questions
 
 def availability_prompt() -> list[str]:
+    """
+    Sends the user a question when they are available to start the job and types of positions they are open to
+
+    Parameters: 
+        None
+
+    Returns: 
+        list[str]
+            Two quesitons about the users availability
+    """
     return ["Ask When they are available to start the job, and for how long?", 
             "Ask Whether they are open to full-time, part-time, or internship roles"]
     
@@ -37,16 +59,44 @@ def availability_prompt() -> list[str]:
     
     
 def academic_background_prompt() -> list[str]:
+    """
+    Guides the bot to ask questions about their resume/academic status and how this aligns with the given role 
+
+    Parameters: 
+        None 
+    
+    Returns: 
+        list[str]
+            Contains the questions about the acedemics and resume 
+    """
     return ["Using the academic information from the resume,  Ask about about their current academic status.", 
             "Using the information from the resume,, Ask how their educational background [X] (listed in the provided resume) aligns with this role"]
 
 
 def interest_prompt() -> list[str]:
+    """
+    Guides the bot to ask about their interest in the company
+    
+    Parameters: 
+        None
+    Returns: 
+        list[str]
+            Returns the given questions 
+    """
     return ["Using the job description and company details, ask What attracts them to the company [X] (listed in job description)", 
     " Ask What attracts them to the company [X](listed in job description) and How does it fit with their career goals?"]
     
 
 def prev_experience_prompt() -> list[str]:
+    """
+    Guides the bot to ask about their previous expriences to relate them to the role
+    
+    Parameters: 
+        None
+    Returns: 
+        list[str]
+            Returns the given questions 
+    """
     return ["Based on the candidate's previous roles listed in the resume: Ask about any of their previous experience at their previous Company [X] (listed in the provided resume).",
     "Based on the candidate's previous roles listed in the resume:  Ask What skills did they gain from their past experience that will be valuable in this role?",
     "Based on the candidate's previous roles listed in the resume: Ask How do those skills apply to the responsibilities listed in this role?" ]
@@ -82,15 +132,15 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     ''' 
     Initial Prompt for the AI which includes the prompt strings
 
-    Inputs: 
+    Parameters: 
         job : Job
             Job model which includes information about the specific job
         talent: TalentProfile
              TalentProfile model which includes information about the talent and their resume  
 
     Returns: 
-        String
-            Returns the inital prompting string which the AI will input
+        file_string: str 
+            Returns the initial prompting string which the AI will input
     '''
     job_locations = job.locations.all()  # get all job locations
     talent_locations = talent.locations.all() # get all talent location

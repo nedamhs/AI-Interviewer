@@ -11,6 +11,7 @@ from .utils.interview_session import InterviewSession
 gi.require_version('GLib', '2.0')
 
 class ZoomBotRunner:
+    '''Runs the zoom bot'''
     def __init__(self, interview : InterviewSession, use_calendly=False):
 
         self.interview = interview
@@ -23,7 +24,7 @@ class ZoomBotRunner:
         self.timeout = 600
 
     def exit_process(self):
-        """Clean shutdown of the bot and main loop"""
+        '''Clean shutdown of the bot and main loop'''
         print("Starting cleanup process...")
         
         # Set flag to prevent re-entry
@@ -53,13 +54,13 @@ class ZoomBotRunner:
         return False
 
     def force_exit(self):
-        """Force the process to exit"""
+        '''Force the process to exit'''
         print("Forcing exit...")
         os._exit(0)  # Use os._exit() to force immediate termination
         return False
 
     def on_signal(self, signum, frame):
-        """Signal handler for SIGINT and SIGTERM"""
+        '''Signal handler for SIGINT and SIGTERM'''
         print(f"\nReceived signal {signum}")
         self.bot.shutdown = True
         # Schedule the exit process to run soon, but not immediately
@@ -69,12 +70,13 @@ class ZoomBotRunner:
             self.exit_process()
 
     def on_timeout(self):
-        """Regular timeout callback"""
+        '''Regular timeout callback'''
         if self.shutdown_requested:
             return False
         return True
 
     def timer(self):
+        '''Finds out if the bot is alone or not, if it is for timeout amount of time it will cause the bot to leave'''
         alone = self.bot.alone
         start = self.bot.start_time
         if alone != None and start != None:
@@ -83,7 +85,7 @@ class ZoomBotRunner:
         return True 
     
     def run(self):
-        """Main run method"""
+        '''Main run method'''
         self.meeting = Meeting()
 
         if self.use_calendly: # get link of meeting created by calendly

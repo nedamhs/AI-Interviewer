@@ -9,16 +9,11 @@ from scipy.signal import resample_poly
 load_dotenv()
 openai = AsyncOpenAI(api_key=os.environ.get("OPENAI-API-KEY"))
 
-
-#NEED TO SPECIFY
-RATE = 24000 
-BLOCK_SIZE = 512
-
 def resample_pcm_24k_to_32k(pcm_bytes: bytes) -> bytes:
   '''
     Takes in 24k pcm and resamples to 32k to be playable in zoom
 
-    Inputs:
+    Parameters:
       pcm_bytes: bytes
         pcm bytes from the async api client
     Returns: 
@@ -36,7 +31,7 @@ async def text_to_audio(text: str,callback: callable) -> None:
   '''
   Creates an api stream to read a string
 
-      Inputs:
+      Parameters:
         text: str 
             text to serve as the input to the bot.
         callback: callable 
@@ -58,7 +53,7 @@ async def play_stream(audio_bytes:AsyncStreamedBinaryAPIResponse, callback:calla
   '''
     Takes the audio, reads it out, resamples the data and sends it to the callback function
 
-    Inputs:
+    Parameters:
       audio_bytes 
           async api bytes of audio 
       callback: callable 

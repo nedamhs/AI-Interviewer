@@ -15,8 +15,19 @@ from profiles.models import TalentProfile
 # email setup is in settings.py 
 
 
-def render_template(filename, context):
-    # Load html
+def render_template(filename:str, context: dict) -> ...:
+    '''
+    Loads the HTML template with personalized items for the user
+
+    Parameters:
+        filename : str
+            gets the filename of the particular 
+        context : dict
+            dictionary of personalized items 
+    Returns:
+        content : 
+            completed template with user information
+    '''
     base_dir = os.path.dirname(os.path.dirname(__file__)) 
     template_path = os.path.join(base_dir, 'templates', filename)
 
@@ -27,7 +38,22 @@ def render_template(filename, context):
         content = content.replace(f'{{{{ {key} }}}}', value)
     return content
 
-def send_calendly_invite(email, name, job_title, calendly_link):
+def send_calendly_invite(email: str, name: str, job_title: str, calendly_link: str)-> None:
+    '''
+    Sends an email to the desired user via calendly 
+
+    Parameters:
+        email: str 
+            user email
+        name: str
+            user name
+        job_title: str 
+            desired job title 
+        calendly_link: str 
+            the link to the calendly link
+        Returns:
+            None
+    '''
     subject = "📅 Schedule Your Screening Interview with Pairwise AI!"
 
     from_email = None

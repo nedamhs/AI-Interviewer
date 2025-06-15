@@ -5,7 +5,6 @@ import pyvirtualcam
 from PIL import Image
 import numpy as np
 import threading
-import time
 
 DEFAULT_WIDTH=1280
 DEFAULT_HEIGHT=720
