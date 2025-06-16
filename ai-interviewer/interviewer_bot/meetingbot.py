@@ -9,7 +9,7 @@ import zoom_meeting_sdk as zoom
 import numpy as np
 from datetime import datetime, timedelta
 from gi.repository import GLib
-from audio_utils.deepgram_transcriber import DeepgramTranscriber
+from .audio_utils.deepgram_transcriber import DeepgramTranscriber
 from .utils.interview_session import InterviewSession
 from .zoom_auth import get_zak
 from .audio_utils.text_to_speech import text_to_audio
