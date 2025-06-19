@@ -1,9 +1,9 @@
 ## Table of Contents
 
 Refer to the quickstart guide in the drive
-- [About](#-about)
-- [Setup](#-setup)
-- [Running](#-running)
+- [About](#about)
+- [Setup](#setup)
+- [Running](#running)
 
 ## About
 
