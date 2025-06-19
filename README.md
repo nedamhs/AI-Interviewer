@@ -41,9 +41,10 @@ docker compose build
 ```
 To run:
 ```shell
-docker compose run --rm develop
+docker compose run --rm develop # Enters the shell of docker container
+python ai-interviewer/test_interview.py # Run in docker container
 ```
-To run the chat bot as a text based conversation in your terminal, run:
+To run the chat bot as a text based conversation in your terminal, run: (You will need to install requirements first if local)
 ```shell
 python ai-interviewer/test_interview.py --terminal 
 ```
