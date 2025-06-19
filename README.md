@@ -30,7 +30,12 @@ For the REST environment variables, create a **Server-To-Server OAuth** app in a
 
 ## Running
 
-A Docker image is provided for deploying the Zoom chat bot on your own device. To run the Zoom container, first build:
+A Docker image is provided for deploying the Zoom chat bot on your own device. The building steps are as follows:
+Apply database migrations:
+```shell
+python manage.py migrate
+```
+Build docker image:
 ```shell
 docker compose build
 ```
