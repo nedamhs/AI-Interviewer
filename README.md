@@ -28,7 +28,7 @@ After obtaining these variables, place them in a **.env** file in the main level
 
 For the REST environment variables, create a **Server-To-Server OAuth** app in a similar way you would build the general app. Make sure to give your Server-To-Server App the **scopes** for all **Meeting** methods and **User** methods. Then, copy the corresponding variables to your .env file.
 
-For the Calendly integrated version, first create a Calendly account and create a scheduled meeting, selecting **Zoom** as its **location**. once an interview is scheduled via calendly, the zoom link can be accessed via Calendly API. the Calendly API key can be accessed from [here](https://calendly.com/integrations/api_webhooks).
+For the Calendly integrated version, first create a Calendly account and create a Calendly event, selecting **Zoom** as its **location**. Once an interview is scheduled via calendly, its zoom link can be accessed via Calendly API. The Calendly API key can be accessed from [here](https://calendly.com/integrations/api_webhooks).
 
 ## Running
 
@@ -45,8 +45,19 @@ docker compose build
 To run:
 ```shell
 docker compose run --rm develop # Enters the shell of docker container
-python ai-interviewer/test_interview.py # Run in docker container
 ```
+Inside the docker container: 
+
+- Standard mode (instantly creates Zoom meeting and joins):
+  
+  ```shell
+  python ai-interviewer/test_interview.py 
+  ```
+- Calendly mode (joins a Zoom meeting created by Calendly):
+  
+  ```shell
+  python ai-interviewer/test_interview.py --calendly
+  ```
 To run the chat bot as a text based conversation in your terminal, run: (You will need to install requirements first if local)
 ```shell
 python ai-interviewer/test_interview.py --terminal 
