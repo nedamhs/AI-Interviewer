@@ -49,3 +49,7 @@ To run the chat bot as a text based conversation in your terminal, run: (You wil
 ```shell
 python ai-interviewer/test_interview.py --terminal 
 ```
+To view the HR Report for previous interviews, run:
+```shell
+python manage.py runserver
+```
