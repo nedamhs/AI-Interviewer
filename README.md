@@ -30,7 +30,7 @@ After obtaining these variables, place them in a **.env** file in the main level
 
 For the REST environment variables, create a **Server-To-Server OAuth** app in a similar way you would build the general app. Make sure to give your Server-To-Server App the **scopes** for all **Meeting** methods and **User** methods. Then, copy the corresponding variables to your .env file.
 
-For the Calendly integrated version, first create a Calendly account and create a Calendly event, selecting **Zoom** as its **location**. Once an interview is scheduled via calendly, its zoom link can be accessed via Calendly API. The Calendly API key can be accessed from [here](https://calendly.com/integrations/api_webhooks).
+For the Calendly integrated version, first create a Calendly account and create a Calendly event, selecting **Zoom** as its **location**, and connect it to your Zoom account. Once an interview is scheduled via calendly, its zoom link can be accessed via Calendly API. The Calendly API key can be accessed from [here](https://calendly.com/integrations/api_webhooks).
 
 ## Running
 
