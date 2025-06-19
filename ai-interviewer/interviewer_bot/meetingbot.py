@@ -535,6 +535,13 @@ class MeetingBot:
         join_param.userType = zoom.SDKUserType.SDK_UT_WITHOUT_LOGIN
 
         param = join_param.param
+        
+        # Currently uses ZAK, which makes bot join on the host's account
+        # Maybe better to switch to join with a bot access token:
+        # https://developers.zoom.us/docs/api/meetings/#tag/meetings/GET/meetings/{meetingId}/jointoken/local_recording
+        # Documentation for JoinParams:
+        # https://marketplacefront.zoom.us/sdk/meeting/linux/structtag_start_param4_without_login.html
+        
         param.userZAK = get_zak() # Join as host
         param.meetingNumber = meeting_number
         param.userName = display_name
