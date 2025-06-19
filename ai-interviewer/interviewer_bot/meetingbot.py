@@ -242,6 +242,7 @@ class MeetingBot:
         self.alone = False
         # Send a welcome message to the chat
         builder = self.chat_ctrl.GetChatMessageBuilder()
+        # This message does not display on zoom browser
         builder.SetContent("Welcome to the meeting! Just send \'ready\' when you are ready to begin.")
         builder.SetReceiver(0)
         builder.SetMessageType(zoom.SDKChatMessageType.To_All)
