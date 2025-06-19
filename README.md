@@ -22,6 +22,7 @@ This project requires **Docker** and the following required **environment variab
 | `REST_CLIENT_ID` | Zoom Server-To-Server OAuth credential used for accessing Zoom API |
 | `REST_CLIENT_SECRET` | Zoom Server-To-Server OAuth credential used for accessing Zoom API |
 | `REST_ACCOUNT_ID` | Zoom Server-To-Server OAuth credential used for accessing Zoom API |
+| `CALENDLY_API_KEY` | API key for accessing the Zoom meeting link created via Calendly |
 
 After obtaining these variables, place them in a **.env** file in the main level directory. Obtaining the [OpenAI](https://openai.com/) and [Deepgram](https://deepgram.com/) API Keys can be done through their corresponding websites. Obtaining the Zoom credentials can be done through the [Zoom App Marketplace](https://marketplace.zoom.us/). After creating a Zoom account, create a **General App** by clicking **Develop** -> **Build App** -> **General App**. Make sure to enable **user:read:zak** in the Scopes. Make sure to also enable **Meeting SDK** in Embed. After that, copy the **Client ID** and **Client Secret** of the app to your **APP_CLIENT_ID** and **APP_CLIENT_SECRET** environment variables. 
 
