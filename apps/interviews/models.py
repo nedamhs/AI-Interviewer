@@ -43,21 +43,20 @@ class Interview(Timestampable):
 
     # can be moved to interviewreport
     final_score = models.FloatField(null=True, blank=True, help_text="Final weighted score for the interview")
-    summary = models.TextField(null=True, blank=True, help_text="Final summary of the interview")
 
 
 class InterviewReport(models.Model):
     interview = models.OneToOneField(Interview, on_delete=models.CASCADE,related_name="report")
 
-    resume_summary = models.TextField()
-    interview_summary = models.TextField()
+    resume_summary = models.TextField()  #resume summary
+    interview_summary = models.TextField() #interview summary 
 
-    recommendation = models.CharField(max_length=20,
-        choices=[("recommended", "Recommended"),("not recommended", "Not Recommended")])
+    recommendation = models.CharField(max_length=20, 
+        choices=[("recommended", "Recommended"),("not recommended", "Not Recommended")]) # whether or not candidate recommended
 
-    reason = models.TextField()
+    reason = models.TextField()  # reason for recommendation
 
-    key_insights = models.JSONField( default=list, help_text="List of 5 key insights, each with a 'text' and 'label' (good/bad)" )
+    key_insights = models.JSONField( default=list, help_text="List of 5 key insights, each with a 'text' and 'label' (good/bad)" ) # 5 interview key points
 
     created_at = models.DateTimeField(auto_now_add=True)
 

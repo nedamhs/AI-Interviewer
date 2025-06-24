@@ -149,8 +149,6 @@ class InterviewSession:
             for tool_call in bot_tools:
                 if tool_call.function.name == "stop_interview_relocation":
                     args = json.loads(tool_call.function.arguments)
-                    interview_summary = args["summary"]
-                    self.interview_object.summary = interview_summary
                     self.finalize_interview()
                     return
 
@@ -191,9 +189,6 @@ class InterviewSession:
                 for tool_call in bot_tools:
                     if tool_call.function.name == "end_interview":
                         args = json.loads(tool_call.function.arguments)
-                        
-                        interview_summary = args["summary"]
-                        self.interview_object.summary = interview_summary
                         self.finalize_interview()
     
                         return

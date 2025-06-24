@@ -11,7 +11,7 @@ class Transcript(Timestampable):
     interview = models.ForeignKey(Interview, on_delete=models.CASCADE, related_name="transcripts") 
     question = models.TextField() # stores question asked by chatbot
     answer = models.TextField() # stores answer from candidate
-    category = models.CharField(max_length=50, blank=True, null = True)
+    category = models.CharField(max_length=50, blank=True, null = True) #category of q&a pair
     
     def __str__(self):
         return f"Transcript ({self.session_id}) for {self.interview.candidate.user.first_name} - {self.interview.job.title}"
@@ -21,20 +21,15 @@ class Transcript(Timestampable):
 class CategoryChoices(models.TextChoices):
     LOCATION = "location"
     AVAILABILITY = "availability"
-    SCHEDULE = "schedule"
     ACADEMIC_BACKGROUND = "academic_background"
     INTEREST = "interest"
     PREV_EXPERIENCE = "prev_experience"
-    TEAMWORK = "teamwork"
-    COMMUNICATION = "communication"
-    PREFERENCE = "preference"
 
 class InterviewScore(models.Model):  
-    interview = models.ForeignKey(Interview,on_delete=models.CASCADE, related_name="scores")
-    category = models.CharField(max_length=50,choices=CategoryChoices.choices)
-    score = models.FloatField(null=True, blank=True)
-    reason = models.TextField(null=True, blank=True)
-    sentiment = models.CharField(max_length=20, null=True, blank=True, help_text="Sentiment of the answer: positive, neutral, negative")
+    interview = models.ForeignKey(Interview,on_delete=models.CASCADE, related_name="scores") 
+    category = models.CharField(max_length=50,choices=CategoryChoices.choices)   # category
+    score = models.FloatField(null=True, blank=True)    # score for this specific category
+    reason = models.TextField(null=True, blank=True)    # reason for this score
 
     def __str__(self):
         return f"{self.interview} - {self.category}: {self.score}"

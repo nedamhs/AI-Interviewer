@@ -73,6 +73,7 @@ def haversine(lat1: float, lon1: float, lat2: float, lon2: float) -> int:
 
 
 
+# currently not being used 
 def process_location_update(user_input: str, job_locations: list) -> tuple[str, float]:
     """
     Processes user's location response update during interview

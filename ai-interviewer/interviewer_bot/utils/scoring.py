@@ -2,14 +2,7 @@ import openai
 from openai import OpenAI
 import json
 from transcripts.models import Transcript, InterviewScore, CategoryChoices
-from interviews.models import Interview 
-
-# from collections import Counter
-# from transformers import pipeline
-
-#model
-# sentiment_analyzer = pipeline("sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english")
-
+from interviews.models import Interview, InterviewReport
 
 def score_interview(interview: Interview, client:OpenAI) -> None:
     """
@@ -49,23 +42,14 @@ def score_interview(interview: Interview, client:OpenAI) -> None:
         InterviewScore.objects.update_or_create(interview=interview, category=category,
                                                  defaults={"score": score,"reason": reason})
 
-        # sentiments = []
-        # for pair in qa_pairs:
-        #     result = sentiment_analyzer(pair.answer)[0]
-        #     sentiments.append(result['label'].lower())  
-        
-        # # majority sentiment
-        # sentiment_counts = Counter(sentiments)
-        # dominant_sentiment = sentiment_counts.most_common(1)[0][0]
 
-        # InterviewScore.objects.update_or_create(interview=interview, category=category, defaults={"score": score,"reason": reason, "sentiment": dominant_sentiment})
-
-
-    scores = InterviewScore.objects.filter(interview=interview).values_list('score', flat=True)
+    # final score based on non-location categories 
+    scores = InterviewScore.objects.filter(interview=interview).exclude(category="location").values_list('score', flat=True)
 
     if scores:
         final_score = sum(scores) / len(scores)  #AVG 
         final_score = round(final_score, 2)
+        # should be stored in interviewReport instead
         interview.final_score = final_score
         interview.save()
 

@@ -15,9 +15,9 @@ def location_prompt(min_dist : int, remote_option : bool) -> list[str]:
 
     Parameters:
         min_dist : int 
-            Calculated distance of the candidate from the job location
+            min Calculated distance of the candidate from the job location
         remote_option : bool 
-            Offers the user an option to do the job remotely if offered 
+            whether or not the job has remote option.  
     
     Returns: 
         questions: list[str]
@@ -41,33 +41,14 @@ def location_prompt(min_dist : int, remote_option : bool) -> list[str]:
 def availability_prompt() -> list[str]:
     """
     Sends the user a question when they are available to start the job and types of positions they are open to
-
-    Parameters: 
-        None
-
-    Returns: 
-        list[str]
-            Two quesitons about the users availability
     """
     return ["Ask When they are available to start the job, and for how long?", 
             "Ask Whether they are open to full-time, part-time, or internship roles"]
-    
-
-# def schedule_prompt() -> list[str]:
-#     return ["Ask about their preferred work schedule and if they are flexible with hours", 
-#             "Ask how do they plan to manage your time effectively, If this role is hybrid/remote"]
     
     
 def academic_background_prompt() -> list[str]:
     """
     Guides the bot to ask questions about their resume/academic status and how this aligns with the given role 
-
-    Parameters: 
-        None 
-    
-    Returns: 
-        list[str]
-            Contains the questions about the acedemics and resume 
     """
     return ["Using the academic information from the resume,  Ask about about their current academic status.", 
             "Using the information from the resume,, Ask how their educational background [X] (listed in the provided resume) aligns with this role"]
@@ -76,56 +57,25 @@ def academic_background_prompt() -> list[str]:
 def interest_prompt() -> list[str]:
     """
     Guides the bot to ask about their interest in the company
-    
-    Parameters: 
-        None
-    Returns: 
-        list[str]
-            Returns the given questions 
     """
-    return ["Using the job description and company details, ask What attracts them to the company [X] (listed in job description)", 
-    " Ask What attracts them to the company [X](listed in job description) and How does it fit with their career goals?"]
+    return ["Using the job description and company details, ask What attracts them to the company", 
+    " Ask How the job fit with their career goals?"]
     
 
 def prev_experience_prompt() -> list[str]:
     """
     Guides the bot to ask about their previous expriences to relate them to the role
-    
-    Parameters: 
-        None
-    Returns: 
-        list[str]
-            Returns the given questions 
     """
     return ["Based on the candidate's previous roles listed in the resume: Ask about any of their previous experience at their previous Company [X] (listed in the provided resume).",
     "Based on the candidate's previous roles listed in the resume:  Ask What skills did they gain from their past experience that will be valuable in this role?",
     "Based on the candidate's previous roles listed in the resume: Ask How do those skills apply to the responsibilities listed in this role?" ]
 
 
-# def teamwork_prompt() -> list[str]:
-#     return ["Ask them about a time when you worked in a team? What was their role, and how did they contribute?",
-#             "Ask How do they handle conflicts or disagreements within a team?"]
-
-# def communication_prompt() -> list[str]:
-#     return ["Ask How do they typically communicate in a remote or hybrid work environment?",
-#             "Aske about a time when they had to explain a complex idea to someone without a technical background."]
-    
-
-# def preference_prompt() -> list[str]:
-#     return ["Ask if they prefer working on multiple smaller tasks at once, or focusing on one large task at a time?", 
-#             "Ask What type of work environment helps them stay productive and engaged?" ]
-
-
-PROMPT_DICT = {#"location"            : location_prompt(), 
-               "availability"        : availability_prompt(), 
-               #"schedule"            : schedule_prompt(),  
+# dictionary holding non-location categories/prompts
+PROMPT_DICT = { "availability"        : availability_prompt(), 
                "academic_background" : academic_background_prompt(),
                "interest"            : interest_prompt(),
-               "experience"          : prev_experience_prompt(), 
-               #"teamwork"            : teamwork_prompt(), 
-               #"communication"       : communication_prompt(), 
-               #"preference"          : preference_prompt()
-               }
+               "experience"          : prev_experience_prompt(), }
 
 
 def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
@@ -156,8 +106,6 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     Ask structured interview questions based on the candidate's resume and predefined topics and Keep the conversation focused and relevant.
     Make sure that interview questions asked are dynamically generated and personalized based on the job information and candidate information provided below.
     Change the wording in the following questions to sound natural and adjust tone and language to give a more conversational experience.
-    If the candidate does not fully answer the question, do not proceed. Politely rephrase and ask again until they provide a complete response. Do not move forward until the current question is fully answered.
-    Do not proceed to the next question until you have confirmed that the previous question has been fully answered.
 
     --- Job Information ---
     **Job Title:** {job.title}
@@ -181,7 +129,5 @@ def start_interview_prompt(job: Job, talent: TalentProfile) -> str:
     file_string += "\nBefore starting, give a short summary of the job description and the candidate's resume." # For testing
 
     file_string += "\nONLY CALL THE END_INTERVIEW TOOL IF MOST OF THE KEY CATEGORIES ARE ASKED"
-
-    #print(file_string) #TESTING
     
     return file_string
