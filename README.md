@@ -11,8 +11,7 @@
 - Design and implement prompting techniques to create a curated interview for candidates.
 - Create an easily integratable codebase
 
-## Demo
-[▶️  Watch the demo Here](./pairwise-video.mp4)
+Demo : https://drive.google.com/file/d/1KJL-OcPIb06MzzsBUEL98Hkl_k71UH4U/view
 
 ## Setup
 This project requires **Docker** and the following required **environment variables**:
